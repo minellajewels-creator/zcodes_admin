@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Attendance — SAPZCODES Payroll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--border:#1e1e2e;--accent:#6c63ff;--accent2:#00e5a0;--danger:#ff4d6d;--warn:#ffa94d;--text:#e8e8f0;--muted:#6b6b80;--card:#13131c;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow-x:hidden}
+
+/* SIDEBAR */
+.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.logo{padding:28px 24px 20px;border-bottom:1px solid var(--border)}
+.logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--accent);letter-spacing:.05em}
+.logo-sub{font-size:.65rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-top:3px}
+nav{flex:1;padding:16px 12px}
+.nav-section{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);padding:12px 12px 6px;margin-top:8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:.78rem;color:var(--muted);transition:all .2s;text-decoration:none;border:1px solid transparent}
+.nav-item:hover{color:var(--text);background:var(--border)}
+.nav-item.active{color:var(--accent);background:rgba(108,99,255,.1);border-color:rgba(108,99,255,.3)}
+.nav-icon{font-size:1rem;width:20px;text-align:center}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+.admin-badge{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(108,99,255,.08);border:1px solid rgba(108,99,255,.2);border-radius:8px}
+.admin-avatar{width:30px;height:30px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.75rem;color:#fff;flex-shrink:0}
+.admin-info .admin-name{font-size:.72rem;color:var(--text)}
+.admin-info .admin-role{font-size:.6rem;color:var(--accent);letter-spacing:.1em}
+.logout-btn{margin-top:10px;width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'DM Mono',monospace;font-size:.72rem;cursor:pointer;transition:all .2s}
+.logout-btn:hover{border-color:var(--danger);color:var(--danger)}
+
+/* MAIN */
+.main{margin-left:240px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{padding:20px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:50}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.content{padding:28px 32px;flex:1}
+
+/* PERIOD SELECTOR */
+.period-bar{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding:16px 20px;background:var(--card);border:1px solid var(--border);border-radius:12px}
+.period-bar label{font-size:.65rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-right:4px}
+.period-select{padding:7px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.78rem;outline:none;cursor:pointer}
+.period-select:focus{border-color:var(--accent)}
+.load-btn{padding:7px 16px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:'DM Mono',monospace;font-size:.72rem;cursor:pointer;transition:all .2s}
+.load-btn:hover{background:#7c75ff}
+.period-info{margin-left:auto;font-size:.72rem;color:var(--muted)}
+
+/* SUMMARY STRIP */
+.summary-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.strip-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:center;animation:fadeUp .4s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.strip-card:nth-child(1){animation-delay:.05s}.strip-card:nth-child(2){animation-delay:.1s}
+.strip-card:nth-child(3){animation-delay:.15s}.strip-card:nth-child(4){animation-delay:.2s}
+.strip-val{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;margin-bottom:4px}
+.strip-lbl{font-size:.62rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.v-present{color:var(--accent2)}.v-absent{color:var(--danger)}.v-lop{color:var(--warn)}.v-ot{color:var(--accent)}
+
+/* ATTENDANCE TABLE */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;animation:fadeUp .5s ease both}
+.table-head-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface)}
+.table-head-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem}
+.save-all-btn{padding:7px 16px;background:var(--accent2);border:none;border-radius:8px;color:#000;font-family:'DM Mono',monospace;font-size:.72rem;cursor:pointer;font-weight:600;transition:all .2s}
+.save-all-btn:hover{background:#00c98a}
+
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--surface)}
+th{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:left;padding:12px 14px;border-bottom:1px solid var(--border);white-space:nowrap}
+th.center{text-align:center}
+td{font-size:.75rem;padding:10px 14px;border-bottom:1px solid rgba(30,30,46,.6);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(108,99,255,.03)}
+
+/* INLINE INPUTS */
+.att-input{width:60px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:.75rem;text-align:center;outline:none;transition:border-color .2s}
+.att-input:focus{border-color:var(--accent)}
+.att-input.lop{border-color:rgba(255,169,77,.3);color:var(--warn)}
+.att-input.lop:focus{border-color:var(--warn)}
+.lop-calc{font-size:.68rem;color:var(--warn);text-align:center}
+.net-pay-cell{font-family:'Syne',sans-serif;font-weight:700;color:var(--accent2);text-align:center}
+.emp-cell{display:flex;align-items:center;gap:10px}
+.mini-avatar{width:26px;height:26px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.6rem;color:#fff;flex-shrink:0}
+.emp-name{font-size:.78rem;font-weight:500}
+.emp-id{font-size:.62rem;color:var(--muted)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.6rem}
+.badge-green{background:rgba(0,229,160,.1);color:var(--accent2);border:1px solid rgba(0,229,160,.2)}
+.badge-red{background:rgba(255,77,109,.1);color:var(--danger);border:1px solid rgba(255,77,109,.2)}
+
+/* IMPORT SECTION */
+.import-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;animation:fadeUp .4s ease both}
+.import-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;margin-bottom:12px}
+.import-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.file-input-wrap{position:relative}
+.file-btn{padding:7px 14px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'DM Mono',monospace;font-size:.72rem;cursor:pointer;transition:all .2s}
+.file-btn:hover{border-color:var(--accent);color:var(--accent)}
+.file-input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.template-btn{padding:7px 14px;background:transparent;border:1px solid rgba(0,229,160,.3);border-radius:8px;color:var(--accent2);font-family:'DM Mono',monospace;font-size:.72rem;cursor:pointer;transition:all .2s}
+.template-btn:hover{background:rgba(0,229,160,.08)}
+.import-info{font-size:.68rem;color:var(--muted)}
+
+/* LOGIN */
+.login-overlay{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center}
+.login-box{width:380px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 36px;animation:fadeUp .4s ease}
+.login-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--accent);margin-bottom:4px}
+.login-sub{font-size:.72rem;color:var(--muted);margin-bottom:32px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:.65rem;color:var(--muted);margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase}
+.field input{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.82rem;outline:none;transition:border-color .2s}
+.field input:focus{border-color:var(--accent)}
+.login-err{font-size:.72rem;color:var(--danger);margin-bottom:12px;min-height:18px}
+.login-submit{width:100%;padding:11px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:'DM Mono',monospace;font-size:.82rem;cursor:pointer}
+.login-note{font-size:.65rem;color:var(--muted);margin-top:16px;text-align:center}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:.78rem;z-index:999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{background:rgba(0,229,160,.15);border:1px solid rgba(0,229,160,.3);color:var(--accent2)}
+.toast.error{background:rgba(255,77,109,.15);border:1px solid rgba(255,77,109,.3);color:var(--danger)}
+
+.loading{text-align:center;padding:48px;color:var(--muted);font-size:.78rem;letter-spacing:.1em}
+.pulse{animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">SAPZCODES</div>
+    <div class="login-sub">Payroll Management System — HR Access Only</div>
+    <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="hr@sapzcodes.com"/></div>
+    <div class="field"><label>Admin Token</label><input type="password" id="loginToken" placeholder="Enter admin token"/></div>
+    <div class="login-err" id="loginErr"></div>
+    <button class="login-submit" onclick="doLogin()">Access Dashboard</button>
+    <div class="login-note">🔒 Restricted to hr@sapzcodes.com only</div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo"><div class="logo-name">SAPZCODES</div><div class="logo-sub">Payroll System</div></div>
+  <nav>
+    <div class="nav-section">Main</div>
+    <a class="nav-item" href="index.html"><span class="nav-icon">⬛</span> Dashboard</a>
+    <a class="nav-item" href="employees.html"><span class="nav-icon">👤</span> Employees</a>
+    <div class="nav-section">Payroll</div>
+    <a class="nav-item active" href="attendance.html"><span class="nav-icon">📅</span> Attendance</a>
+    <a class="nav-item" href="payroll-run.html"><span class="nav-icon">⚡</span> Run Payroll</a>
+    <a class="nav-item" href="reimbursements.html"><span class="nav-icon">🧾</span> Reimbursements</a>
+    <div class="nav-section">Finance</div>
+    <a class="nav-item" href="reports.html"><span class="nav-icon">📊</span> Reports</a>
+    <a class="nav-item" href="fnf.html"><span class="nav-icon">🔚</span> Full & Final</a>
+    <a class="nav-item" href="audit.html"><span class="nav-icon">🗂</span> Audit Log</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="admin-badge">
+      <div class="admin-avatar">HR</div>
+      <div class="admin-info"><div class="admin-name">hr@sapzcodes.com</div><div class="admin-role">ADMINISTRATOR</div></div>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">↩ Logout</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="page-title">Attendance</div>
+    <div class="topbar-right">
+      <div class="file-input-wrap">
+        <button class="template-btn">⬇ CSV Template</button>
+        <input type="file" class="file-input" id="csvFile" accept=".csv" onchange="importCSV(event)"/>
+      </div>
+      <button class="template-btn" onclick="downloadTemplate()">📄 Download Template</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- PERIOD SELECTOR -->
+    <div class="period-bar">
+      <label>Month</label>
+      <select class="period-select" id="selMonth">
+        <option value="1">January</option><option value="2">February</option>
+        <option value="3">March</option><option value="4">April</option>
+        <option value="5">May</option><option value="6">June</option>
+        <option value="7">July</option><option value="8">August</option>
+        <option value="9">September</option><option value="10">October</option>
+        <option value="11">November</option><option value="12">December</option>
+      </select>
+      <label>Year</label>
+      <select class="period-select" id="selYear"></select>
+      <button class="load-btn" onclick="loadAttendance()">Load Employees</button>
+      <span class="period-info" id="periodInfo">Select period and load</span>
+    </div>
+
+    <!-- SUMMARY STRIP -->
+    <div class="summary-strip" id="summaryStrip" style="display:none">
+      <div class="strip-card"><div class="strip-val v-present" id="sumPresent">—</div><div class="strip-lbl">Avg Days Present</div></div>
+      <div class="strip-card"><div class="strip-val v-absent" id="sumAbsent">—</div><div class="strip-lbl">Total Absent Days</div></div>
+      <div class="strip-card"><div class="strip-val v-lop" id="sumLop">—</div><div class="strip-lbl">Total LOP Days</div></div>
+      <div class="strip-card"><div class="strip-val v-ot" id="sumOt">—</div><div class="strip-lbl">Total OT Hours</div></div>
+    </div>
+
+    <!-- ATTENDANCE TABLE -->
+    <div class="table-wrap">
+      <div class="table-head-row">
+        <div class="table-head-title">Employee Attendance Entry</div>
+        <button class="save-all-btn" onclick="saveAll()">💾 Save All Attendance</button>
+      </div>
+      <div id="attBody"><div class="loading pulse">Select month & year, then click Load Employees</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+let ADMIN_TOKEN = "";
+let employees   = [];
+let attRows     = []; // {empId, row data}
+
+// AUTH
+function doLogin(){
+  const email=document.getElementById("loginEmail").value.trim();
+  const token=document.getElementById("loginToken").value.trim();
+  const err=document.getElementById("loginErr");
+  if(email!=="hr@sapzcodes.com"){err.textContent="Access restricted to hr@sapzcodes.com only.";return;}
+  if(!token){err.textContent="Admin token required.";return;}
+  ADMIN_TOKEN=token;
+  sessionStorage.setItem("szc_token",token);
+  sessionStorage.setItem("szc_email",email);
+  document.getElementById("loginOverlay").style.display="none";
+  init();
+}
+function checkAuth(){
+  const t=sessionStorage.getItem("szc_token");
+  const e=sessionStorage.getItem("szc_email");
+  if(t&&e==="hr@sapzcodes.com"){ADMIN_TOKEN=t;document.getElementById("loginOverlay").style.display="none";return true;}
+  return false;
+}
+function doLogout(){sessionStorage.clear();location.reload();}
+
+// API
+async function apiGet(action,extra={}){
+  if(API_URL==="YOUR_APPS_SCRIPT_WEB_APP_URL_HERE")return null;
+  const p=new URLSearchParams({action,token:ADMIN_TOKEN,...extra});
+  const r=await fetch(`${API_URL}?${p}`);
+  return r.json();
+}
+async function apiPost(body){
+  const r=await fetch(API_URL,{method:"POST",body:JSON.stringify({...body,token:ADMIN_TOKEN})});
+  return r.json();
+}
+
+// INIT
+function init(){
+  // Set year options
+  const now=new Date();
+  const ys=document.getElementById("selYear");
+  for(let y=now.getFullYear()-1;y<=now.getFullYear()+1;y++){
+    const o=document.createElement("option");
+    o.value=y;o.textContent=y;
+    if(y===now.getFullYear())o.selected=true;
+    ys.appendChild(o);
+  }
+  document.getElementById("selMonth").value=now.getMonth()+1;
+}
+
+async function loadAttendance(){
+  const month=document.getElementById("selMonth").value;
+  const year=document.getElementById("selYear").value;
+  const mName=document.getElementById("selMonth").options[document.getElementById("selMonth").selectedIndex].text;
+  document.getElementById("periodInfo").textContent=`${mName} ${year}`;
+  document.getElementById("attBody").innerHTML='<div class="loading pulse">Loading employees...</div>';
+
+  const data=await apiGet("getEmployees");
+  employees=data?data.filter(e=>e.STATUS==="ACTIVE"):getMockEmployees();
+
+  renderAttTable(employees,month,year);
+  document.getElementById("summaryStrip").style.display="grid";
+  updateSummary();
+}
+
+function renderAttTable(list,month,year){
+  if(!list.length){document.getElementById("attBody").innerHTML='<div class="loading">No active employees.</div>';return;}
+
+  const workingDays=getWorkingDays(Number(month),Number(year));
+
+  document.getElementById("attBody").innerHTML=`
+    <table>
+      <thead><tr>
+        <th>Employee</th>
+        <th class="center">Working Days</th>
+        <th class="center">Days Present</th>
+        <th class="center">Paid Leave</th>
+        <th class="center">Unpaid Leave</th>
+        <th class="center">OT Hours</th>
+        <th class="center" style="color:var(--warn)">LOP Days</th>
+        <th class="center">LOP Deduction</th>
+      </tr></thead>
+      <tbody id="attTbody">
+        ${list.map(e=>{
+          const gross=Number(e.BASIC||0)+Number(e.HRA||0)+Number(e.SPECIAL_ALLOWANCE||0)+Number(e.OTHER_ALLOWANCE||0);
+          const perDay=(gross/workingDays).toFixed(2);
+          const initials=e.FULL_NAME.split(" ").map(n=>n[0]).join("").substring(0,2).toUpperCase();
+          return `<tr id="row_${e.EMP_ID}">
+            <td>
+              <div class="emp-cell">
+                <div class="mini-avatar">${initials}</div>
+                <div><div class="emp-name">${e.FULL_NAME}</div><div class="emp-id">${e.EMP_ID}</div></div>
+              </div>
+            </td>
+            <td class="center">
+              <input class="att-input" type="number" min="1" max="31"
+                id="wd_${e.EMP_ID}" value="${workingDays}"
+                onchange="recalcLOP('${e.EMP_ID}',${gross})" />
+            </td>
+            <td class="center">
+              <input class="att-input" type="number" min="0" max="31"
+                id="dp_${e.EMP_ID}" value="${workingDays}"
+                onchange="recalcLOP('${e.EMP_ID}',${gross})" />
+            </td>
+            <td class="center">
+              <input class="att-input" type="number" min="0" max="31"
+                id="pl_${e.EMP_ID}" value="0"
+                onchange="recalcLOP('${e.EMP_ID}',${gross})" />
+            </td>
+            <td class="center">
+              <input class="att-input" type="number" min="0" max="31"
+                id="ul_${e.EMP_ID}" value="0"
+                onchange="recalcLOP('${e.EMP_ID}',${gross})" />
+            </td>
+            <td class="center">
+              <input class="att-input" type="number" min="0"
+                id="ot_${e.EMP_ID}" value="0" />
+            </td>
+            <td class="center">
+              <input class="att-input lop" type="number" min="0"
+                id="lop_${e.EMP_ID}" value="0"
+                onchange="recalcDeduction('${e.EMP_ID}',${gross})" />
+            </td>
+            <td>
+              <div class="lop-calc" id="lopamt_${e.EMP_ID}">₹0.00</div>
+            </td>
+          </tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
+}
+
+function recalcLOP(empId,gross){
+  const wd =Number(document.getElementById(`wd_${empId}`).value)||26;
+  const dp =Number(document.getElementById(`dp_${empId}`).value)||0;
+  const pl =Number(document.getElementById(`pl_${empId}`).value)||0;
+  // LOP = working days - (present + paid leave)
+  const lop=Math.max(0,wd-(dp+pl));
+  document.getElementById(`lop_${empId}`).value=lop;
+  recalcDeduction(empId,gross);
+  updateSummary();
+}
+
+function recalcDeduction(empId,gross){
+  const wd =Number(document.getElementById(`wd_${empId}`).value)||26;
+  const lop=Number(document.getElementById(`lop_${empId}`).value)||0;
+  const perDay=gross/wd;
+  const deduction=lop*perDay;
+  document.getElementById(`lopamt_${empId}`).textContent="₹"+deduction.toLocaleString("en-IN",{maximumFractionDigits:2});
+}
+
+function updateSummary(){
+  let totalPresent=0,totalAbsent=0,totalLop=0,totalOt=0,count=0;
+  employees.forEach(e=>{
+    const dp=Number(document.getElementById(`dp_${e.EMP_ID}`)?.value)||0;
+    const wd=Number(document.getElementById(`wd_${e.EMP_ID}`)?.value)||26;
+    const lop=Number(document.getElementById(`lop_${e.EMP_ID}`)?.value)||0;
+    const ot=Number(document.getElementById(`ot_${e.EMP_ID}`)?.value)||0;
+    totalPresent+=dp;totalAbsent+=(wd-dp);totalLop+=lop;totalOt+=ot;count++;
+  });
+  if(!count)return;
+  document.getElementById("sumPresent").textContent=(totalPresent/count).toFixed(1);
+  document.getElementById("sumAbsent").textContent=totalAbsent;
+  document.getElementById("sumLop").textContent=totalLop;
+  document.getElementById("sumOt").textContent=totalOt;
+}
+
+async function saveAll(){
+  const month=document.getElementById("selMonth").value;
+  const year=document.getElementById("selYear").value;
+  if(!employees.length){showToast("Load employees first","error");return;}
+
+  const records=employees.map(e=>({
+    EMP_ID:e.EMP_ID,
+    MONTH:Number(month),
+    YEAR:Number(year),
+    TOTAL_WORKING_DAYS:Number(document.getElementById(`wd_${e.EMP_ID}`).value)||26,
+    DAYS_PRESENT:Number(document.getElementById(`dp_${e.EMP_ID}`).value)||0,
+    PAID_LEAVES:Number(document.getElementById(`pl_${e.EMP_ID}`).value)||0,
+    UNPAID_LEAVES:Number(document.getElementById(`ul_${e.EMP_ID}`).value)||0,
+    OVERTIME_HOURS:Number(document.getElementById(`ot_${e.EMP_ID}`).value)||0,
+    LOP_DAYS:Number(document.getElementById(`lop_${e.EMP_ID}`).value)||0,
+  }));
+
+  if(API_URL==="YOUR_APPS_SCRIPT_WEB_APP_URL_HERE"){
+    showToast(`✅ Attendance saved for ${records.length} employees (mock)`,"success");
+    return;
+  }
+
+  const res=await apiPost({action:"saveAttendance",data:records});
+  if(res?.success) showToast(`✅ Attendance saved for ${records.length} employees`,"success");
+  else showToast("Error: "+(res?.error||"Unknown"),"error");
+}
+
+// WORKING DAYS CALCULATOR (excludes Sundays)
+function getWorkingDays(month,year){
+  const days=new Date(year,month,0).getDate();
+  let count=0;
+  for(let d=1;d<=days;d++){
+    const day=new Date(year,month-1,d).getDay();
+    if(day!==0)count++; // exclude Sunday
+  }
+  return count;
+}
+
+// CSV IMPORT
+function importCSV(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const lines=ev.target.result.split("\n").filter(l=>l.trim());
+    const headers=lines[0].split(",").map(h=>h.trim().toUpperCase());
+    lines.slice(1).forEach(line=>{
+      const vals=line.split(",");
+      const row={};
+      headers.forEach((h,i)=>row[h]=(vals[i]||"").trim());
+      const empId=row["EMP_ID"];
+      if(!empId)return;
+      if(document.getElementById(`dp_${empId}`)){
+        document.getElementById(`wd_${empId}`).value=row["TOTAL_WORKING_DAYS"]||26;
+        document.getElementById(`dp_${empId}`).value=row["DAYS_PRESENT"]||0;
+        document.getElementById(`pl_${empId}`).value=row["PAID_LEAVES"]||0;
+        document.getElementById(`ul_${empId}`).value=row["UNPAID_LEAVES"]||0;
+        document.getElementById(`ot_${empId}`).value=row["OVERTIME_HOURS"]||0;
+        document.getElementById(`lop_${empId}`).value=row["LOP_DAYS"]||0;
+      }
+    });
+    showToast("✅ CSV imported successfully","success");
+    updateSummary();
+  };
+  reader.readAsText(file);
+}
+
+function downloadTemplate(){
+  const header="EMP_ID,TOTAL_WORKING_DAYS,DAYS_PRESENT,PAID_LEAVES,UNPAID_LEAVES,OVERTIME_HOURS,LOP_DAYS";
+  const rows=employees.length
+    ? employees.map(e=>`${e.EMP_ID},26,26,0,0,0,0`).join("\n")
+    : "SZC0001,26,24,1,0,0,1\nSZC0002,26,26,0,0,2,0";
+  const blob=new Blob([header+"\n"+rows],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="attendance_template.csv";
+  a.click();
+}
+
+function getMockEmployees(){
+  return[
+    {EMP_ID:"SZC0001",FULL_NAME:"Ashok Kumar",BASIC:"35000",HRA:"14000",SPECIAL_ALLOWANCE:"6000",OTHER_ALLOWANCE:"2000",STATUS:"ACTIVE"},
+    {EMP_ID:"SZC0002",FULL_NAME:"Priya S",BASIC:"30000",HRA:"12000",SPECIAL_ALLOWANCE:"5000",OTHER_ALLOWANCE:"2000",STATUS:"ACTIVE"},
+    {EMP_ID:"SZC0003",FULL_NAME:"Ravi M",BASIC:"18000",HRA:"7200",SPECIAL_ALLOWANCE:"3000",OTHER_ALLOWANCE:"1000",STATUS:"ACTIVE"},
+    {EMP_ID:"SZC0004",FULL_NAME:"Meena R",BASIC:"20000",HRA:"8000",SPECIAL_ALLOWANCE:"3500",OTHER_ALLOWANCE:"1500",STATUS:"ACTIVE"},
+  ];
+}
+
+function showToast(msg,type="success"){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.className="toast "+type+" show";
+  setTimeout(()=>t.classList.remove("show"),3500);
+}
+
+window.onload=()=>{
+  if(checkAuth())init();
+  document.getElementById("loginToken").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
+};
+</script>
+</body>
+</html>

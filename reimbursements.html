@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Reimbursements — SAPZCODES Payroll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--border:#1e1e2e;--accent:#6c63ff;--accent2:#00e5a0;--danger:#ff4d6d;--warn:#ffa94d;--text:#e8e8f0;--muted:#6b6b80;--card:#13131c;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow-x:hidden}
+.sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.logo{padding:28px 24px 20px;border-bottom:1px solid var(--border)}
+.logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--accent);letter-spacing:.05em}
+.logo-sub{font-size:.65rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-top:3px}
+nav{flex:1;padding:16px 12px}
+.nav-section{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);padding:12px 12px 6px;margin-top:8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:.78rem;color:var(--muted);transition:all .2s;text-decoration:none;border:1px solid transparent}
+.nav-item:hover{color:var(--text);background:var(--border)}
+.nav-item.active{color:var(--accent);background:rgba(108,99,255,.1);border-color:rgba(108,99,255,.3)}
+.nav-icon{font-size:1rem;width:20px;text-align:center}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+.admin-badge{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(108,99,255,.08);border:1px solid rgba(108,99,255,.2);border-radius:8px}
+.admin-avatar{width:30px;height:30px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.75rem;color:#fff;flex-shrink:0}
+.admin-name{font-size:.72rem;color:var(--text)}.admin-role{font-size:.6rem;color:var(--accent);letter-spacing:.1em}
+.logout-btn{margin-top:10px;width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'DM Mono',monospace;font-size:.72rem;cursor:pointer;transition:all .2s}
+.logout-btn:hover{border-color:var(--danger);color:var(--danger)}
+.main{margin-left:240px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{padding:20px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:50}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem}
+.content{padding:28px 32px;flex:1}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.scard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;animation:fadeUp .4s ease both;position:relative;overflow:hidden}
+.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.scard.c1::before{background:var(--warn)}.scard.c2::before{background:var(--accent2)}.scard.c3::before{background:var(--danger)}.scard.c4::before{background:var(--accent)}
+.scard:nth-child(1){animation-delay:.05s}.scard:nth-child(2){animation-delay:.1s}.scard:nth-child(3){animation-delay:.15s}.scard:nth-child(4){animation-delay:.2s}
+.scard-lbl{font-size:.6rem;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
+.scard-val{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem}
+.scard.c1 .scard-val{color:var(--warn)}.scard.c2 .scard-val{color:var(--accent2)}.scard.c3 .scard-val{color:var(--danger)}.scard.c4 .scard-val{color:var(--accent)}
+
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.filter-select{padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.75rem;outline:none;cursor:pointer}
+.filter-select:focus{border-color:var(--accent)}
+.search-wrap{position:relative;flex:1;max-width:300px}
+.search-wrap input{width:100%;padding:8px 12px 8px 34px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.75rem;outline:none;transition:border-color .2s}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.85rem}
+.add-btn{padding:8px 16px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:'DM Mono',monospace;font-size:.73rem;cursor:pointer;transition:all .2s;margin-left:auto}
+.add-btn:hover{background:#7c75ff}
+
+/* TABLE */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;animation:fadeUp .5s ease .2s both}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--surface)}
+th{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:left;padding:12px 16px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{font-size:.75rem;padding:12px 16px;border-bottom:1px solid rgba(30,30,46,.6);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(108,99,255,.03)}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.6rem;letter-spacing:.06em}
+.badge-green{background:rgba(0,229,160,.1);color:var(--accent2);border:1px solid rgba(0,229,160,.2)}
+.badge-red{background:rgba(255,77,109,.1);color:var(--danger);border:1px solid rgba(255,77,109,.2)}
+.badge-warn{background:rgba(255,169,77,.1);color:var(--warn);border:1px solid rgba(255,169,77,.2)}
+.badge-blue{background:rgba(108,99,255,.1);color:var(--accent);border:1px solid rgba(108,99,255,.2)}
+.emp-cell{display:flex;align-items:center;gap:9px}
+.mini-av{width:26px;height:26px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.6rem;color:#fff;flex-shrink:0}
+.action-btns{display:flex;gap:6px}
+.btn-sm{padding:4px 10px;border-radius:6px;font-size:.65rem;font-family:'DM Mono',monospace;cursor:pointer;border:1px solid;transition:all .15s}
+.btn-approve{background:rgba(0,229,160,.08);border-color:rgba(0,229,160,.3);color:var(--accent2)}
+.btn-approve:hover{background:rgba(0,229,160,.15)}
+.btn-reject{background:rgba(255,77,109,.08);border-color:rgba(255,77,109,.3);color:var(--danger)}
+.btn-reject:hover{background:rgba(255,77,109,.15)}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:500px;max-width:95vw;max-height:92vh;overflow-y:auto;padding:32px;animation:fadeUp .3s ease}
+.modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:4px}
+.modal-sub{font-size:.72rem;color:var(--muted);margin-bottom:22px}
+.modal-close{float:right;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer}
+.modal-close:hover{color:var(--text)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid .full{grid-column:1/-1}
+.field{margin-bottom:0}
+.field label{display:block;font-size:.63rem;color:var(--muted);margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.78rem;outline:none;transition:border-color .2s;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+.save-btn{width:100%;margin-top:18px;padding:11px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:'DM Mono',monospace;font-size:.8rem;cursor:pointer;font-weight:500;transition:all .2s}
+.save-btn:hover{background:#7c75ff}
+
+/* APPROVE MODAL */
+.approve-details{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;font-size:.75rem}
+.approve-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(30,30,46,.5)}
+.approve-row:last-child{border-bottom:none}
+.approve-lbl{color:var(--muted)}
+.approve-val{color:var(--text);font-weight:500}
+.approve-input-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.approve-input-row label{font-size:.65rem;color:var(--muted);white-space:nowrap;letter-spacing:.08em;text-transform:uppercase}
+.approve-input-row input{flex:1;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.78rem;outline:none}
+.approve-input-row input:focus{border-color:var(--accent2)}
+.approve-btns{display:flex;gap:10px}
+.btn-approve-full{flex:1;padding:10px;background:rgba(0,229,160,.12);border:1px solid rgba(0,229,160,.3);border-radius:8px;color:var(--accent2);font-family:'DM Mono',monospace;font-size:.76rem;cursor:pointer;transition:all .2s}
+.btn-approve-full:hover{background:rgba(0,229,160,.2)}
+.btn-reject-full{flex:1;padding:10px;background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.3);border-radius:8px;color:var(--danger);font-family:'DM Mono',monospace;font-size:.76rem;cursor:pointer}
+
+/* LOGIN */
+.login-overlay{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center}
+.login-box{width:380px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 36px;animation:fadeUp .4s ease}
+.login-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--accent);margin-bottom:4px}
+.login-sub{font-size:.72rem;color:var(--muted);margin-bottom:32px}
+.lfield{margin-bottom:16px}
+.lfield label{display:block;font-size:.65rem;color:var(--muted);margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase}
+.lfield input{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.82rem;outline:none;transition:border-color .2s}
+.lfield input:focus{border-color:var(--accent)}
+.login-err{font-size:.72rem;color:var(--danger);margin-bottom:12px;min-height:18px}
+.login-submit{width:100%;padding:11px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:'DM Mono',monospace;font-size:.82rem;cursor:pointer}
+.login-note{font-size:.65rem;color:var(--muted);margin-top:16px;text-align:center}
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:.78rem;z-index:999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{background:rgba(0,229,160,.15);border:1px solid rgba(0,229,160,.3);color:var(--accent2)}
+.toast.error{background:rgba(255,77,109,.15);border:1px solid rgba(255,77,109,.3);color:var(--danger)}
+.loading{text-align:center;padding:48px;color:var(--muted);font-size:.78rem;letter-spacing:.1em}
+.pulse{animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">SAPZCODES</div>
+    <div class="login-sub">Payroll Management — HR Access Only</div>
+    <div class="lfield"><label>Email</label><input type="email" id="loginEmail" placeholder="hr@sapzcodes.com"/></div>
+    <div class="lfield"><label>Admin Token</label><input type="password" id="loginToken" placeholder="Enter admin token"/></div>
+    <div class="login-err" id="loginErr"></div>
+    <button class="login-submit" onclick="doLogin()">Access Dashboard</button>
+    <div class="login-note">🔒 Restricted to hr@sapzcodes.com only</div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo"><div class="logo-name">SAPZCODES</div><div class="logo-sub">Payroll System</div></div>
+  <nav>
+    <div class="nav-section">Main</div>
+    <a class="nav-item" href="index.html"><span class="nav-icon">⬛</span> Dashboard</a>
+    <a class="nav-item" href="employees.html"><span class="nav-icon">👤</span> Employees</a>
+    <div class="nav-section">Payroll</div>
+    <a class="nav-item" href="attendance.html"><span class="nav-icon">📅</span> Attendance</a>
+    <a class="nav-item" href="payroll-run.html"><span class="nav-icon">⚡</span> Run Payroll</a>
+    <a class="nav-item active" href="reimbursements.html"><span class="nav-icon">🧾</span> Reimbursements</a>
+    <div class="nav-section">Finance</div>
+    <a class="nav-item" href="reports.html"><span class="nav-icon">📊</span> Reports</a>
+    <a class="nav-item" href="fnf.html"><span class="nav-icon">🔚</span> Full & Final</a>
+    <a class="nav-item" href="audit.html"><span class="nav-icon">🗂</span> Audit Log</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="admin-badge">
+      <div class="admin-avatar">HR</div>
+      <div class="admin-info"><div class="admin-name">hr@sapzcodes.com</div><div class="admin-role">ADMINISTRATOR</div></div>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">↩ Logout</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="page-title">Reimbursements</div>
+    <button class="add-btn" onclick="openAddModal()">+ Add Request</button>
+  </div>
+  <div class="content">
+
+    <div class="stats-row">
+      <div class="scard c1"><div class="scard-lbl">Pending</div><div class="scard-val" id="sPending">—</div></div>
+      <div class="scard c2"><div class="scard-lbl">Approved</div><div class="scard-val" id="sApproved">—</div></div>
+      <div class="scard c3"><div class="scard-lbl">Rejected</div><div class="scard-val" id="sRejected">—</div></div>
+      <div class="scard c4"><div class="scard-lbl">Total Claimed</div><div class="scard-val" id="sTotal">—</div></div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search by ID, employee..." oninput="filterTable()"/>
+      </div>
+      <select class="filter-select" id="statusFilter" onchange="filterTable()">
+        <option value="">All Status</option>
+        <option value="PENDING">Pending</option>
+        <option value="APPROVED">Approved</option>
+        <option value="REJECTED">Rejected</option>
+      </select>
+      <select class="filter-select" id="catFilter" onchange="filterTable()">
+        <option value="">All Categories</option>
+        <option value="Travel">Travel</option>
+        <option value="Medical">Medical</option>
+        <option value="Food">Food</option>
+        <option value="Equipment">Equipment</option>
+        <option value="Internet">Internet</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div class="table-wrap">
+      <div id="tableBody"><div class="loading pulse">Loading reimbursements...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-bg" id="addModal">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('addModal').classList.remove('open')">✕</button>
+    <div class="modal-title">Add Reimbursement Request</div>
+    <div class="modal-sub">Log a new reimbursement claim for an employee.</div>
+    <div class="form-grid">
+      <div class="field full"><label>Employee ID</label><input type="text" id="f_empId" placeholder="e.g. SZC0001"/></div>
+      <div class="field"><label>Month</label>
+        <select id="f_month">
+          <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+          <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+          <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+          <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+        </select>
+      </div>
+      <div class="field"><label>Year</label><input type="number" id="f_year" placeholder="2025"/></div>
+      <div class="field"><label>Category</label>
+        <select id="f_cat">
+          <option>Travel</option><option>Medical</option><option>Food</option>
+          <option>Equipment</option><option>Internet</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Amount Claimed (₹)</label><input type="number" id="f_amt" placeholder="500"/></div>
+      <div class="field full"><label>Notes</label><textarea id="f_notes" rows="2" placeholder="Brief description..."></textarea></div>
+    </div>
+    <button class="save-btn" onclick="addReimbursement()">💾 Submit Request</button>
+  </div>
+</div>
+
+<!-- APPROVE MODAL -->
+<div class="modal-bg" id="approveModal">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('approveModal').classList.remove('open')">✕</button>
+    <div class="modal-title">Review Reimbursement</div>
+    <div class="modal-sub">Approve or reject this request. Approved amount may differ from claimed.</div>
+    <div class="approve-details" id="approveDetails"></div>
+    <div class="approve-input-row">
+      <label>Approved Amount (₹)</label>
+      <input type="number" id="approvedAmt" placeholder="Enter amount"/>
+    </div>
+    <div class="approve-btns">
+      <button class="btn-approve-full" onclick="submitApproval('APPROVED')">✅ Approve</button>
+      <button class="btn-reject-full" onclick="submitApproval('REJECTED')">✕ Reject</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_URL="YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+let ADMIN_TOKEN="";
+let allData=[];
+let currentReimbId=null;
+
+function doLogin(){
+  const email=document.getElementById("loginEmail").value.trim();
+  const token=document.getElementById("loginToken").value.trim();
+  const err=document.getElementById("loginErr");
+  if(email!=="hr@sapzcodes.com"){err.textContent="Access restricted to hr@sapzcodes.com only.";return;}
+  if(!token){err.textContent="Admin token required.";return;}
+  ADMIN_TOKEN=token;sessionStorage.setItem("szc_token",token);sessionStorage.setItem("szc_email",email);
+  document.getElementById("loginOverlay").style.display="none";init();
+}
+function checkAuth(){
+  const t=sessionStorage.getItem("szc_token"),e=sessionStorage.getItem("szc_email");
+  if(t&&e==="hr@sapzcodes.com"){ADMIN_TOKEN=t;document.getElementById("loginOverlay").style.display="none";return true;}
+  return false;
+}
+function doLogout(){sessionStorage.clear();location.reload();}
+
+async function apiGet(action,extra={}){
+  if(API_URL==="YOUR_APPS_SCRIPT_WEB_APP_URL_HERE")return null;
+  const p=new URLSearchParams({action,token:ADMIN_TOKEN,...extra});
+  const r=await fetch(`${API_URL}?${p}`);return r.json();
+}
+async function apiPost(body){
+  const r=await fetch(API_URL,{method:"POST",body:JSON.stringify({...body,token:ADMIN_TOKEN})});return r.json();
+}
+
+async function init(){
+  const data=await apiGet("getReimbursements");
+  allData=data||getMockData();
+  render(allData);updateStats(allData);
+  const now=new Date();
+  document.getElementById("f_month").value=now.getMonth()+1;
+  document.getElementById("f_year").value=now.getFullYear();
+}
+
+function render(list){
+  const el=document.getElementById("tableBody");
+  if(!list.length){el.innerHTML='<div class="loading">No reimbursements found.</div>';return;}
+  el.innerHTML=`<table>
+    <thead><tr><th>ID</th><th>Employee</th><th>Period</th><th>Category</th><th>Claimed</th><th>Approved</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
+    <tbody>${list.map(r=>`<tr>
+      <td style="color:var(--muted);font-size:.68rem">${r.REIMB_ID}</td>
+      <td><div class="emp-cell"><div class="mini-av">${(r.EMP_ID||"").substring(3,5)}</div><span>${r.EMP_ID}</span></div></td>
+      <td style="color:var(--muted)">${getMonthName(r.MONTH)} ${r.YEAR}</td>
+      <td><span class="badge badge-blue">${r.CATEGORY}</span></td>
+      <td style="font-family:'Syne',sans-serif;font-weight:700">₹${fmt(r.AMOUNT_CLAIMED)}</td>
+      <td style="color:var(--accent2);font-family:'Syne',sans-serif;font-weight:700">${r.AMOUNT_APPROVED?'₹'+fmt(r.AMOUNT_APPROVED):'—'}</td>
+      <td><span class="badge ${r.STATUS==='APPROVED'?'badge-green':r.STATUS==='REJECTED'?'badge-red':'badge-warn'}">${r.STATUS}</span></td>
+      <td style="color:var(--muted);font-size:.68rem">${r.SUBMITTED_ON||'—'}</td>
+      <td><div class="action-btns">
+        ${r.STATUS==='PENDING'?`<button class="btn-sm btn-approve" onclick="openApproveModal('${r.REIMB_ID}')">Review</button>`:''}
+      </div></td>
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function updateStats(list){
+  document.getElementById("sPending").textContent=list.filter(r=>r.STATUS==="PENDING").length;
+  document.getElementById("sApproved").textContent=list.filter(r=>r.STATUS==="APPROVED").length;
+  document.getElementById("sRejected").textContent=list.filter(r=>r.STATUS==="REJECTED").length;
+  const total=list.reduce((s,r)=>s+Number(r.AMOUNT_CLAIMED||0),0);
+  document.getElementById("sTotal").textContent="₹"+fmtL(total);
+}
+
+function filterTable(){
+  const q=document.getElementById("searchInput").value.toLowerCase();
+  const st=document.getElementById("statusFilter").value;
+  const cat=document.getElementById("catFilter").value;
+  const filtered=allData.filter(r=>{
+    const mq=!q||(r.EMP_ID||"").toLowerCase().includes(q)||(r.REIMB_ID||"").toLowerCase().includes(q);
+    const ms=!st||r.STATUS===st;
+    const mc=!cat||r.CATEGORY===cat;
+    return mq&&ms&&mc;
+  });
+  render(filtered);
+}
+
+function openAddModal(){document.getElementById("addModal").classList.add("open");}
+
+async function addReimbursement(){
+  const empId=document.getElementById("f_empId").value.trim();
+  const month=document.getElementById("f_month").value;
+  const year=document.getElementById("f_year").value;
+  const cat=document.getElementById("f_cat").value;
+  const amt=document.getElementById("f_amt").value;
+  if(!empId||!amt){showToast("Employee ID and amount are required","error");return;}
+
+  const now=new Date();
+  const newEntry={
+    REIMB_ID:"RB"+Date.now(),EMP_ID:empId,MONTH:month,YEAR:year,
+    CATEGORY:cat,AMOUNT_CLAIMED:amt,AMOUNT_APPROVED:"",
+    STATUS:"PENDING",SUBMITTED_ON:now.toLocaleDateString("en-IN"),APPROVED_ON:""
+  };
+
+  if(API_URL==="YOUR_APPS_SCRIPT_WEB_APP_URL_HERE"){
+    allData.unshift(newEntry);render(allData);updateStats(allData);
+    document.getElementById("addModal").classList.remove("open");
+    showToast("✅ Reimbursement request added (mock)","success");return;
+  }
+  const res=await apiPost({action:"addReimbursement",data:newEntry});
+  if(res?.success){showToast("✅ Request added","success");document.getElementById("addModal").classList.remove("open");await init();}
+  else showToast("Error: "+(res?.error||"Unknown"),"error");
+}
+
+function openApproveModal(reimbId){
+  currentReimbId=reimbId;
+  const r=allData.find(x=>x.REIMB_ID===reimbId);
+  if(!r)return;
+  document.getElementById("approveDetails").innerHTML=`
+    <div class="approve-row"><span class="approve-lbl">Employee</span><span class="approve-val">${r.EMP_ID}</span></div>
+    <div class="approve-row"><span class="approve-lbl">Category</span><span class="approve-val">${r.CATEGORY}</span></div>
+    <div class="approve-row"><span class="approve-lbl">Period</span><span class="approve-val">${getMonthName(r.MONTH)} ${r.YEAR}</span></div>
+    <div class="approve-row"><span class="approve-lbl">Amount Claimed</span><span class="approve-val" style="color:var(--warn)">₹${fmt(r.AMOUNT_CLAIMED)}</span></div>`;
+  document.getElementById("approvedAmt").value=r.AMOUNT_CLAIMED;
+  document.getElementById("approveModal").classList.add("open");
+}
+
+async function submitApproval(status){
+  const amt=document.getElementById("approvedAmt").value;
+  if(!currentReimbId)return;
+
+  if(API_URL==="YOUR_APPS_SCRIPT_WEB_APP_URL_HERE"){
+    const idx=allData.findIndex(x=>x.REIMB_ID===currentReimbId);
+    if(idx>-1){allData[idx].STATUS=status;allData[idx].AMOUNT_APPROVED=status==="APPROVED"?amt:"0";allData[idx].APPROVED_ON=new Date().toLocaleDateString("en-IN");}
+    render(allData);updateStats(allData);
+    document.getElementById("approveModal").classList.remove("open");
+    showToast(`✅ Reimbursement ${status.toLowerCase()} (mock)`,"success");return;
+  }
+  const res=await apiPost({action:"approveReimb",reimbId:currentReimbId,approvedAmount:amt,status});
+  if(res?.success){showToast(`✅ Reimbursement ${status.toLowerCase()}`,"success");document.getElementById("approveModal").classList.remove("open");await init();}
+  else showToast("Error: "+(res?.error||"Unknown"),"error");
+}
+
+function getMockData(){
+  return[
+    {REIMB_ID:"RB001",EMP_ID:"SZC0001",MONTH:5,YEAR:2025,CATEGORY:"Travel",AMOUNT_CLAIMED:1200,AMOUNT_APPROVED:"",STATUS:"PENDING",SUBMITTED_ON:"10/05/2025",APPROVED_ON:""},
+    {REIMB_ID:"RB002",EMP_ID:"SZC0002",MONTH:5,YEAR:2025,CATEGORY:"Internet",AMOUNT_CLAIMED:800,AMOUNT_APPROVED:800,STATUS:"APPROVED",SUBMITTED_ON:"08/05/2025",APPROVED_ON:"12/05/2025"},
+    {REIMB_ID:"RB003",EMP_ID:"SZC0003",MONTH:4,YEAR:2025,CATEGORY:"Medical",AMOUNT_CLAIMED:2500,AMOUNT_APPROVED:0,STATUS:"REJECTED",SUBMITTED_ON:"02/05/2025",APPROVED_ON:"05/05/2025"},
+    {REIMB_ID:"RB004",EMP_ID:"SZC0004",MONTH:5,YEAR:2025,CATEGORY:"Food",AMOUNT_CLAIMED:600,AMOUNT_APPROVED:"",STATUS:"PENDING",SUBMITTED_ON:"14/05/2025",APPROVED_ON:""},
+  ];
+}
+
+function getMonthName(m){const mn=["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];return mn[Number(m)]||m;}
+function fmt(n){return Number(n).toLocaleString("en-IN",{maximumFractionDigits:2});}
+function fmtL(n){if(n>=100000)return(n/100000).toFixed(1)+"L";if(n>=1000)return(n/1000).toFixed(1)+"K";return n.toFixed(0);}
+function showToast(msg,type="success"){const t=document.getElementById("toast");t.textContent=msg;t.className="toast "+type+" show";setTimeout(()=>t.classList.remove("show"),3500);}
+window.onload=()=>{if(checkAuth())init();document.getElementById("loginToken").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});};
+</script>
+</body>
+</html>

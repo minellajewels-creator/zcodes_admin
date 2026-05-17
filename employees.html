@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Employees — SAPZCODES Payroll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:#0a0a0f; --surface:#111118; --border:#1e1e2e;
+    --accent:#6c63ff; --accent2:#00e5a0; --danger:#ff4d6d;
+    --warn:#ffa94d; --text:#e8e8f0; --muted:#6b6b80; --card:#13131c;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow-x:hidden}
+
+  /* ── SIDEBAR (same as dashboard) ── */
+  .sidebar{width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+  .logo{padding:28px 24px 20px;border-bottom:1px solid var(--border)}
+  .logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--accent);letter-spacing:.05em}
+  .logo-sub{font-size:.65rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-top:3px}
+  nav{flex:1;padding:16px 12px}
+  .nav-section{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);padding:12px 12px 6px;margin-top:8px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:.78rem;color:var(--muted);transition:all .2s;text-decoration:none;border:1px solid transparent}
+  .nav-item:hover{color:var(--text);background:var(--border)}
+  .nav-item.active{color:var(--accent);background:rgba(108,99,255,.1);border-color:rgba(108,99,255,.3)}
+  .nav-icon{font-size:1rem;width:20px;text-align:center}
+  .sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+  .admin-badge{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(108,99,255,.08);border:1px solid rgba(108,99,255,.2);border-radius:8px}
+  .admin-avatar{width:30px;height:30px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.75rem;color:#fff;flex-shrink:0}
+  .admin-name{font-size:.72rem;color:var(--text);font-weight:500}
+  .admin-role{font-size:.6rem;color:var(--accent);letter-spacing:.1em}
+  .logout-btn{margin-top:10px;width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'DM Mono',monospace;font-size:.72rem;cursor:pointer;transition:all .2s}
+  .logout-btn:hover{border-color:var(--danger);color:var(--danger)}
+
+  /* ── MAIN ── */
+  .main{margin-left:240px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+  .topbar{padding:20px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:50}
+  .page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem}
+  .add-btn{padding:8px 18px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:'DM Mono',monospace;font-size:.75rem;cursor:pointer;font-weight:500;transition:all .2s;letter-spacing:.05em}
+  .add-btn:hover{background:#7c75ff;transform:translateY(-1px)}
+  .content{padding:28px 32px;flex:1}
+
+  /* ── SEARCH BAR ── */
+  .search-row{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .search-wrap{position:relative;flex:1;max-width:360px}
+  .search-wrap input{width:100%;padding:9px 14px 9px 36px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.78rem;outline:none;transition:border-color .2s}
+  .search-wrap input:focus{border-color:var(--accent)}
+  .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem}
+  .filter-select{padding:9px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.75rem;outline:none;cursor:pointer}
+  .emp-count{font-size:.72rem;color:var(--muted);margin-left:auto}
+
+  /* ── EMPLOYEE TABLE ── */
+  .table-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;animation:fadeUp .4s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  table{width:100%;border-collapse:collapse}
+  thead tr{background:var(--surface)}
+  th{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);text-align:left;padding:14px 16px;border-bottom:1px solid var(--border);white-space:nowrap}
+  td{font-size:.75rem;padding:13px 16px;border-bottom:1px solid rgba(30,30,46,.6);color:var(--text);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(108,99,255,.04)}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.6rem;letter-spacing:.08em}
+  .badge-green{background:rgba(0,229,160,.1);color:var(--accent2);border:1px solid rgba(0,229,160,.2)}
+  .badge-red{background:rgba(255,77,109,.1);color:var(--danger);border:1px solid rgba(255,77,109,.2)}
+  .badge-blue{background:rgba(108,99,255,.1);color:var(--accent);border:1px solid rgba(108,99,255,.2)}
+  .badge-warn{background:rgba(255,169,77,.1);color:var(--warn);border:1px solid rgba(255,169,77,.2)}
+  .avatar-cell{display:flex;align-items:center;gap:10px}
+  .mini-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.65rem;color:#fff;flex-shrink:0}
+  .emp-name{font-weight:500}
+  .emp-id{font-size:.65rem;color:var(--muted)}
+  .action-btns{display:flex;gap:6px}
+  .btn-sm{padding:4px 10px;border-radius:6px;font-size:.65rem;font-family:'DM Mono',monospace;cursor:pointer;border:1px solid;transition:all .15s;letter-spacing:.04em}
+  .btn-edit{background:transparent;border-color:rgba(108,99,255,.4);color:var(--accent)}
+  .btn-edit:hover{background:rgba(108,99,255,.1)}
+  .btn-del{background:transparent;border-color:rgba(255,77,109,.3);color:var(--danger)}
+  .btn-del:hover{background:rgba(255,77,109,.1)}
+  .toggle-pill{display:inline-flex;align-items:center;gap:4px;font-size:.65rem;padding:2px 8px;border-radius:12px}
+  .toggle-yes{background:rgba(0,229,160,.08);color:var(--accent2);border:1px solid rgba(0,229,160,.2)}
+  .toggle-no{background:rgba(107,107,128,.08);color:var(--muted);border:1px solid rgba(107,107,128,.2)}
+
+  /* ── MODAL ── */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+  .modal-bg.open{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:620px;max-width:95vw;max-height:92vh;overflow-y:auto;padding:32px;animation:fadeUp .3s ease}
+  .modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:4px}
+  .modal-sub{font-size:.72rem;color:var(--muted);margin-bottom:24px}
+  .modal-close{float:right;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;margin-top:-4px}
+  .modal-close:hover{color:var(--text)}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .form-grid .full{grid-column:1/-1}
+  .field label{display:block;font-size:.65rem;color:var(--muted);margin-bottom:5px;letter-spacing:.1em;text-transform:uppercase}
+  .field input,.field select{width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:.78rem;outline:none;transition:border-color .2s}
+  .field input:focus,.field select:focus{border-color:var(--accent)}
+  .field select option{background:var(--bg)}
+  .section-head{font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;color:var(--accent);margin:20px 0 12px;grid-column:1/-1;padding-bottom:6px;border-bottom:1px solid var(--border)}
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px}
+  .toggle-label{font-size:.75rem}
+  .toggle-label small{display:block;font-size:.62rem;color:var(--muted);margin-top:2px}
+  .switch{position:relative;width:38px;height:20px;flex-shrink:0}
+  .switch input{opacity:0;width:0;height:0}
+  .slider{position:absolute;inset:0;background:var(--border);border-radius:20px;cursor:pointer;transition:.2s}
+  .slider::before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:.2s}
+  input:checked+.slider{background:var(--accent2)}
+  input:checked+.slider::before{transform:translateX(18px);background:#fff}
+  .save-btn{width:100%;margin-top:20px;padding:11px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:'DM Mono',monospace;font-size:.82rem;cursor:pointer;font-weight:500;transition:all .2s;letter-spacing:.05em}
+  .save-btn:hover{background:#7c75ff}
+
+  /* ── CONFIRM MODAL ── */
+  .confirm-modal{width:380px}
+  .confirm-msg{font-size:.82rem;color:var(--muted);margin:12px 0 24px;line-height:1.6}
+  .confirm-btns{display:flex;gap:10px}
+  .btn-cancel{flex:1;padding:10px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'DM Mono',monospace;font-size:.78rem;cursor:pointer}
+  .btn-confirm-del{flex:1;padding:10px;background:rgba(255,77,109,.15);border:1px solid rgba(255,77,109,.3);border-radius:8px;color:var(--danger);font-family:'DM Mono',monospace;font-size:.78rem;cursor:pointer}
+
+  /* ── TOAST ── */
+  .toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:.78rem;z-index:999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateY(0)}
+  .toast.success{background:rgba(0,229,160,.15);border:1px solid rgba(0,229,160,.3);color:var(--accent2)}
+  .toast.error{background:rgba(255,77,109,.15);border:1px solid rgba(255,77,109,.3);color:var(--danger)}
+
+  .loading{text-align:center;padding:48px;color:var(--muted);font-size:.78rem;letter-spacing:.1em}
+  .pulse{animation:pulse 1.5s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .empty{text-align:center;padding:60px;color:var(--muted)}
+  .empty-icon{font-size:2.5rem;margin-bottom:12px}
+  .empty-text{font-size:.8rem}
+
+  /* LOGIN OVERLAY */
+  .login-overlay{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center}
+  .login-box{width:380px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 36px;animation:fadeUp .4s ease}
+  .login-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--accent);margin-bottom:4px}
+  .login-sub{font-size:.72rem;color:var(--muted);margin-bottom:32px;letter-spacing:.05em}
+  .field{margin-bottom:16px}
+  .login-err{font-size:.72rem;color:var(--danger);margin-bottom:12px;min-height:18px}
+  .login-submit{width:100%;padding:11px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:'DM Mono',monospace;font-size:.82rem;font-weight:500;cursor:pointer;transition:all .2s}
+  .login-submit:hover{background:#7c75ff}
+  .login-note{font-size:.65rem;color:var(--muted);margin-top:16px;text-align:center}
+</style>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">SAPZCODES</div>
+    <div class="login-sub">Payroll Management System — HR Access Only</div>
+    <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="hr@sapzcodes.com" /></div>
+    <div class="field"><label>Admin Token</label><input type="password" id="loginToken" placeholder="Enter admin token" /></div>
+    <div class="login-err" id="loginErr"></div>
+    <button class="login-submit" onclick="doLogin()">Access Dashboard</button>
+    <div class="login-note">🔒 Restricted to hr@sapzcodes.com only</div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-name">SAPZCODES</div>
+    <div class="logo-sub">Payroll System</div>
+  </div>
+  <nav>
+    <div class="nav-section">Main</div>
+    <a class="nav-item" href="index.html"><span class="nav-icon">⬛</span> Dashboard</a>
+    <a class="nav-item active" href="employees.html"><span class="nav-icon">👤</span> Employees</a>
+    <div class="nav-section">Payroll</div>
+    <a class="nav-item" href="attendance.html"><span class="nav-icon">📅</span> Attendance</a>
+    <a class="nav-item" href="payroll-run.html"><span class="nav-icon">⚡</span> Run Payroll</a>
+    <a class="nav-item" href="reimbursements.html"><span class="nav-icon">🧾</span> Reimbursements</a>
+    <div class="nav-section">Finance</div>
+    <a class="nav-item" href="reports.html"><span class="nav-icon">📊</span> Reports</a>
+    <a class="nav-item" href="fnf.html"><span class="nav-icon">🔚</span> Full & Final</a>
+    <a class="nav-item" href="audit.html"><span class="nav-icon">🗂</span> Audit Log</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="admin-badge">
+      <div class="admin-avatar">HR</div>
+      <div class="admin-info">
+        <div class="admin-name">hr@sapzcodes.com</div>
+        <div class="admin-role">ADMINISTRATOR</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">↩ Logout</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="page-title">Employees</div>
+    <button class="add-btn" onclick="openAddModal()">+ Add Employee</button>
+  </div>
+  <div class="content">
+    <div class="search-row">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search by name, ID, designation..." oninput="filterTable()" />
+      </div>
+      <select class="filter-select" id="statusFilter" onchange="filterTable()">
+        <option value="">All Status</option>
+        <option value="ACTIVE">Active</option>
+        <option value="INACTIVE">Inactive</option>
+      </select>
+      <select class="filter-select" id="deptFilter" onchange="filterTable()">
+        <option value="">All Departments</option>
+      </select>
+      <span class="emp-count" id="empCount">— employees</span>
+    </div>
+
+    <div class="table-wrap">
+      <div id="tableBody"><div class="loading pulse">Loading employees...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-bg" id="empModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeEmpModal()">✕</button>
+    <div class="modal-title" id="modalTitle">Add Employee</div>
+    <div class="modal-sub" id="modalSub">Fill in the details. An offer letter will be auto-sent on add.</div>
+
+    <div class="form-grid">
+      <div class="section-head">Personal Info</div>
+      <div class="field"><label>Full Name</label><input type="text" id="f_name" placeholder="e.g. Priya S" /></div>
+      <div class="field"><label>Email</label><input type="email" id="f_email" placeholder="priya@email.com" /></div>
+      <div class="field"><label>Phone</label><input type="tel" id="f_phone" placeholder="9876543210" /></div>
+      <div class="field"><label>PAN</label><input type="text" id="f_pan" placeholder="ABCDE1234F" style="text-transform:uppercase" /></div>
+      <div class="field full"><label>Aadhar</label><input type="text" id="f_aadhar" placeholder="1234 5678 9012" /></div>
+
+      <div class="section-head">Employment</div>
+      <div class="field"><label>Designation</label><input type="text" id="f_desig" placeholder="e.g. SAP Consultant" /></div>
+      <div class="field"><label>Department</label><input type="text" id="f_dept" placeholder="e.g. Training" /></div>
+      <div class="field"><label>Join Date</label><input type="date" id="f_join" /></div>
+      <div class="field"><label>Status</label>
+        <select id="f_status">
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
+      </div>
+
+      <div class="section-head">Salary Structure (Monthly ₹)</div>
+      <div class="field"><label>Basic</label><input type="number" id="f_basic" placeholder="25000" oninput="calcGross()" /></div>
+      <div class="field"><label>HRA</label><input type="number" id="f_hra" placeholder="10000" oninput="calcGross()" /></div>
+      <div class="field"><label>Special Allowance</label><input type="number" id="f_sa" placeholder="5000" oninput="calcGross()" /></div>
+      <div class="field"><label>Other Allowance</label><input type="number" id="f_oa" placeholder="2000" oninput="calcGross()" /></div>
+      <div class="field full">
+        <label>Gross (Auto-calculated)</label>
+        <input type="text" id="f_gross" readonly style="color:var(--accent2);font-weight:500" placeholder="₹0" />
+      </div>
+
+      <div class="section-head">Statutory Deductions</div>
+      <div class="full" style="display:flex;flex-direction:column;gap:10px">
+        <div class="toggle-row">
+          <div class="toggle-label">PF (Provident Fund)<small>12% of Basic, capped ₹1,800/month</small></div>
+          <label class="switch"><input type="checkbox" id="f_pf" /><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-label">ESI (Employee State Insurance)<small>0.75% of Gross — applicable if Gross ≤ ₹21,000</small></div>
+          <label class="switch"><input type="checkbox" id="f_esi" /><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-label">PT (Professional Tax)<small>Tamil Nadu slab — ₹200/month if Gross > ₹21,000</small></div>
+          <label class="switch"><input type="checkbox" id="f_pt" /><span class="slider"></span></label>
+        </div>
+      </div>
+
+      <div class="section-head">Bank Details</div>
+      <div class="field"><label>Bank Name</label><input type="text" id="f_bank" placeholder="e.g. SBI" /></div>
+      <div class="field"><label>Account Number</label><input type="text" id="f_acc" placeholder="XXXXXXXXXXXXXXX" /></div>
+      <div class="field full"><label>IFSC Code</label><input type="text" id="f_ifsc" placeholder="SBIN0001234" style="text-transform:uppercase" /></div>
+    </div>
+
+    <button class="save-btn" id="saveBtn" onclick="saveEmployee()">💾 Save Employee</button>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE MODAL -->
+<div class="modal-bg" id="confirmModal">
+  <div class="modal confirm-modal">
+    <div class="modal-title">Deactivate Employee?</div>
+    <div class="confirm-msg" id="confirmMsg">This will mark the employee as INACTIVE. All their records will be retained. You can reactivate them from the edit form.</div>
+    <div class="confirm-btns">
+      <button class="btn-cancel" onclick="closeConfirmModal()">Cancel</button>
+      <button class="btn-confirm-del" onclick="confirmDelete()">Deactivate</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── CONFIG ─────────────────────────────────────────────────
+const API_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+let ADMIN_TOKEN = "";
+let allEmployees = [];
+let editMode = false;
+let currentEmpId = null;
+let deleteEmpId = null;
+
+// ─── AUTH ────────────────────────────────────────────────────
+function doLogin() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const token = document.getElementById("loginToken").value.trim();
+  const err   = document.getElementById("loginErr");
+  if (email !== "hr@sapzcodes.com") { err.textContent = "Access restricted to hr@sapzcodes.com only."; return; }
+  if (!token) { err.textContent = "Admin token is required."; return; }
+  ADMIN_TOKEN = token;
+  sessionStorage.setItem("szc_token", token);
+  sessionStorage.setItem("szc_email", email);
+  document.getElementById("loginOverlay").style.display = "none";
+  init();
+}
+function checkAuth() {
+  const token = sessionStorage.getItem("szc_token");
+  const email = sessionStorage.getItem("szc_email");
+  if (token && email === "hr@sapzcodes.com") { ADMIN_TOKEN = token; document.getElementById("loginOverlay").style.display = "none"; return true; }
+  return false;
+}
+function doLogout() { sessionStorage.clear(); location.reload(); }
+
+// ─── API ─────────────────────────────────────────────────────
+async function apiGet(action, extra = {}) {
+  if (API_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") return null;
+  const params = new URLSearchParams({ action, token: ADMIN_TOKEN, ...extra });
+  const res = await fetch(`${API_URL}?${params}`);
+  return res.json();
+}
+async function apiPost(body) {
+  const res = await fetch(API_URL, { method:"POST", body: JSON.stringify({ ...body, token: ADMIN_TOKEN }) });
+  return res.json();
+}
+
+// ─── INIT ────────────────────────────────────────────────────
+async function init() {
+  const data = await apiGet("getEmployees");
+  if (!data) { loadMockEmployees(); return; }
+  allEmployees = data;
+  renderTable(allEmployees);
+  populateDeptFilter();
+}
+
+// ─── RENDER ──────────────────────────────────────────────────
+function renderTable(list) {
+  document.getElementById("empCount").textContent = list.length + " employees";
+  const body = document.getElementById("tableBody");
+  if (!list.length) {
+    body.innerHTML = `<div class="empty"><div class="empty-icon">👤</div><div class="empty-text">No employees found.</div></div>`;
+    return;
+  }
+  body.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Employee</th><th>Designation</th><th>Department</th>
+        <th>Gross</th><th>PF</th><th>ESI</th><th>PT</th>
+        <th>Status</th><th>Offer Sent</th><th>Actions</th>
+      </tr></thead>
+      <tbody>
+        ${list.map(e => {
+          const gross = (Number(e.BASIC||0)+Number(e.HRA||0)+Number(e.SPECIAL_ALLOWANCE||0)+Number(e.OTHER_ALLOWANCE||0)).toLocaleString("en-IN");
+          const initials = e.FULL_NAME.split(" ").map(n=>n[0]).join("").substring(0,2).toUpperCase();
+          return `<tr>
+            <td>
+              <div class="avatar-cell">
+                <div class="mini-avatar">${initials}</div>
+                <div><div class="emp-name">${e.FULL_NAME}</div><div class="emp-id">${e.EMP_ID}</div></div>
+              </div>
+            </td>
+            <td>${e.DESIGNATION||"—"}</td>
+            <td>${e.DEPARTMENT||"—"}</td>
+            <td style="color:var(--accent2)">₹${gross}</td>
+            <td><span class="toggle-pill ${e.PF_APPLICABLE==='YES'?'toggle-yes':'toggle-no'}">${e.PF_APPLICABLE==='YES'?'✓ ON':'✗ OFF'}</span></td>
+            <td><span class="toggle-pill ${e.ESI_APPLICABLE==='YES'?'toggle-yes':'toggle-no'}">${e.ESI_APPLICABLE==='YES'?'✓ ON':'✗ OFF'}</span></td>
+            <td><span class="toggle-pill ${e.PT_APPLICABLE==='YES'?'toggle-yes':'toggle-no'}">${e.PT_APPLICABLE==='YES'?'✓ ON':'✗ OFF'}</span></td>
+            <td><span class="badge ${e.STATUS==='ACTIVE'?'badge-green':'badge-red'}">${e.STATUS}</span></td>
+            <td><span class="badge ${e.OFFER_LETTER_SENT==='YES'?'badge-blue':'badge-warn'}">${e.OFFER_LETTER_SENT==='YES'?'Sent':'Pending'}</span></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-sm btn-edit" onclick="openEditModal('${e.EMP_ID}')">Edit</button>
+                <button class="btn-sm btn-del" onclick="openConfirmDelete('${e.EMP_ID}','${e.FULL_NAME}')">Deactivate</button>
+              </div>
+            </td>
+          </tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
+}
+
+// ─── FILTER ──────────────────────────────────────────────────
+function filterTable() {
+  const q    = document.getElementById("searchInput").value.toLowerCase();
+  const stat = document.getElementById("statusFilter").value;
+  const dept = document.getElementById("deptFilter").value;
+  const filtered = allEmployees.filter(e => {
+    const matchQ    = !q || (e.FULL_NAME||"").toLowerCase().includes(q) || (e.EMP_ID||"").toLowerCase().includes(q) || (e.DESIGNATION||"").toLowerCase().includes(q);
+    const matchStat = !stat || e.STATUS === stat;
+    const matchDept = !dept || e.DEPARTMENT === dept;
+    return matchQ && matchStat && matchDept;
+  });
+  renderTable(filtered);
+}
+
+function populateDeptFilter() {
+  const depts = [...new Set(allEmployees.map(e => e.DEPARTMENT).filter(Boolean))];
+  const sel = document.getElementById("deptFilter");
+  depts.forEach(d => { const o = document.createElement("option"); o.value = d; o.textContent = d; sel.appendChild(o); });
+}
+
+// ─── ADD MODAL ───────────────────────────────────────────────
+function openAddModal() {
+  editMode = false; currentEmpId = null;
+  document.getElementById("modalTitle").textContent = "Add Employee";
+  document.getElementById("modalSub").textContent   = "Fill in details. An offer letter will be auto-sent to the employee's email.";
+  document.getElementById("saveBtn").textContent     = "💾 Save & Send Offer Letter";
+  clearForm();
+  document.getElementById("empModal").classList.add("open");
+}
+
+function openEditModal(empId) {
+  editMode = true; currentEmpId = empId;
+  const e = allEmployees.find(x => x.EMP_ID === empId);
+  if (!e) return;
+  document.getElementById("modalTitle").textContent = "Edit Employee — " + e.EMP_ID;
+  document.getElementById("modalSub").textContent   = "Update employee details. Salary structure changes take effect in next payroll run.";
+  document.getElementById("saveBtn").textContent     = "💾 Update Employee";
+  fillForm(e);
+  document.getElementById("empModal").classList.add("open");
+}
+
+function closeEmpModal() { document.getElementById("empModal").classList.remove("open"); }
+
+function clearForm() {
+  ["f_name","f_email","f_phone","f_pan","f_aadhar","f_desig","f_dept",
+   "f_basic","f_hra","f_sa","f_oa","f_gross","f_bank","f_acc","f_ifsc"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  document.getElementById("f_join").value   = new Date().toISOString().split("T")[0];
+  document.getElementById("f_status").value = "ACTIVE";
+  document.getElementById("f_pf").checked  = true;
+  document.getElementById("f_esi").checked = true;
+  document.getElementById("f_pt").checked  = true;
+}
+
+function fillForm(e) {
+  document.getElementById("f_name").value   = e.FULL_NAME||"";
+  document.getElementById("f_email").value  = e.EMAIL||"";
+  document.getElementById("f_phone").value  = e.PHONE||"";
+  document.getElementById("f_pan").value    = e.PAN||"";
+  document.getElementById("f_aadhar").value = e.AADHAR||"";
+  document.getElementById("f_desig").value  = e.DESIGNATION||"";
+  document.getElementById("f_dept").value   = e.DEPARTMENT||"";
+  document.getElementById("f_join").value   = e.JOIN_DATE||"";
+  document.getElementById("f_status").value = e.STATUS||"ACTIVE";
+  document.getElementById("f_basic").value  = e.BASIC||"";
+  document.getElementById("f_hra").value    = e.HRA||"";
+  document.getElementById("f_sa").value     = e.SPECIAL_ALLOWANCE||"";
+  document.getElementById("f_oa").value     = e.OTHER_ALLOWANCE||"";
+  document.getElementById("f_bank").value   = e.BANK_NAME||"";
+  document.getElementById("f_acc").value    = e.ACCOUNT_NO||"";
+  document.getElementById("f_ifsc").value   = e.IFSC||"";
+  document.getElementById("f_pf").checked   = e.PF_APPLICABLE === "YES";
+  document.getElementById("f_esi").checked  = e.ESI_APPLICABLE === "YES";
+  document.getElementById("f_pt").checked   = e.PT_APPLICABLE === "YES";
+  calcGross();
+}
+
+function calcGross() {
+  const b = Number(document.getElementById("f_basic").value)||0;
+  const h = Number(document.getElementById("f_hra").value)||0;
+  const s = Number(document.getElementById("f_sa").value)||0;
+  const o = Number(document.getElementById("f_oa").value)||0;
+  document.getElementById("f_gross").value = "₹" + (b+h+s+o).toLocaleString("en-IN");
+}
+
+// ─── SAVE EMPLOYEE ────────────────────────────────────────────
+async function saveEmployee() {
+  const data = {
+    FULL_NAME:         document.getElementById("f_name").value.trim(),
+    EMAIL:             document.getElementById("f_email").value.trim(),
+    PHONE:             document.getElementById("f_phone").value.trim(),
+    PAN:               document.getElementById("f_pan").value.trim().toUpperCase(),
+    AADHAR:            document.getElementById("f_aadhar").value.trim(),
+    DESIGNATION:       document.getElementById("f_desig").value.trim(),
+    DEPARTMENT:        document.getElementById("f_dept").value.trim(),
+    JOIN_DATE:         document.getElementById("f_join").value,
+    STATUS:            document.getElementById("f_status").value,
+    BASIC:             document.getElementById("f_basic").value,
+    HRA:               document.getElementById("f_hra").value,
+    SPECIAL_ALLOWANCE: document.getElementById("f_sa").value,
+    OTHER_ALLOWANCE:   document.getElementById("f_oa").value,
+    PF_APPLICABLE:     document.getElementById("f_pf").checked  ? "YES" : "NO",
+    ESI_APPLICABLE:    document.getElementById("f_esi").checked ? "YES" : "NO",
+    PT_APPLICABLE:     document.getElementById("f_pt").checked  ? "YES" : "NO",
+    BANK_NAME:         document.getElementById("f_bank").value.trim(),
+    ACCOUNT_NO:        document.getElementById("f_acc").value.trim(),
+    IFSC:              document.getElementById("f_ifsc").value.trim().toUpperCase(),
+  };
+
+  if (!data.FULL_NAME || !data.EMAIL || !data.DESIGNATION) {
+    showToast("Name, Email and Designation are required", "error"); return;
+  }
+
+  const action = editMode ? "updateEmployee" : "addEmployee";
+  if (editMode) data.EMP_ID = currentEmpId;
+
+  if (API_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") {
+    // Mock save
+    showToast(editMode ? "✅ Employee updated (mock)" : "✅ Employee added — offer letter sent (mock)", "success");
+    closeEmpModal();
+    return;
+  }
+
+  const res = await apiPost({ action, data });
+  if (res?.success) {
+    showToast(editMode ? "✅ Employee updated" : `✅ Employee added — ID: ${res.empId} — Offer letter sent`, "success");
+    closeEmpModal();
+    await init();
+  } else {
+    showToast("Error: " + (res?.error || "Unknown"), "error");
+  }
+}
+
+// ─── DELETE ──────────────────────────────────────────────────
+function openConfirmDelete(empId, name) {
+  deleteEmpId = empId;
+  document.getElementById("confirmMsg").textContent = `Deactivate ${name} (${empId})? Their records will be kept. You can reactivate anytime.`;
+  document.getElementById("confirmModal").classList.add("open");
+}
+function closeConfirmModal() { document.getElementById("confirmModal").classList.remove("open"); }
+async function confirmDelete() {
+  if (!deleteEmpId) return;
+  if (API_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") {
+    showToast("Employee deactivated (mock)", "success"); closeConfirmModal(); return;
+  }
+  const res = await apiPost({ action: "deleteEmployee", empId: deleteEmpId });
+  if (res?.success) {
+    showToast("✅ Employee deactivated", "success");
+    closeConfirmModal(); await init();
+  } else { showToast("Error: " + (res?.error || "Unknown"), "error"); }
+}
+
+// ─── MOCK DATA ───────────────────────────────────────────────
+function loadMockEmployees() {
+  allEmployees = [
+    { EMP_ID:"SZC0001", FULL_NAME:"Ashok Kumar", EMAIL:"ashok@sapzcodes.com", DESIGNATION:"ABAP Developer", DEPARTMENT:"Development", JOIN_DATE:"2025-01-15", BASIC:"35000", HRA:"14000", SPECIAL_ALLOWANCE:"6000", OTHER_ALLOWANCE:"2000", PF_APPLICABLE:"YES", ESI_APPLICABLE:"NO", PT_APPLICABLE:"YES", STATUS:"ACTIVE", OFFER_LETTER_SENT:"YES", BANK_NAME:"SBI", ACCOUNT_NO:"123456789", IFSC:"SBIN0001" },
+    { EMP_ID:"SZC0002", FULL_NAME:"Priya S", EMAIL:"priya@sapzcodes.com", DESIGNATION:"SAP Consultant", DEPARTMENT:"Consulting", JOIN_DATE:"2025-02-01", BASIC:"30000", HRA:"12000", SPECIAL_ALLOWANCE:"5000", OTHER_ALLOWANCE:"2000", PF_APPLICABLE:"YES", ESI_APPLICABLE:"NO", PT_APPLICABLE:"YES", STATUS:"ACTIVE", OFFER_LETTER_SENT:"YES", BANK_NAME:"HDFC", ACCOUNT_NO:"987654321", IFSC:"HDFC0001" },
+    { EMP_ID:"SZC0003", FULL_NAME:"Ravi M", EMAIL:"ravi@sapzcodes.com", DESIGNATION:"Trainer", DEPARTMENT:"Training", JOIN_DATE:"2025-03-10", BASIC:"18000", HRA:"7200", SPECIAL_ALLOWANCE:"3000", OTHER_ALLOWANCE:"1000", PF_APPLICABLE:"YES", ESI_APPLICABLE:"YES", PT_APPLICABLE:"NO", STATUS:"ACTIVE", OFFER_LETTER_SENT:"YES", BANK_NAME:"Canara", ACCOUNT_NO:"456789123", IFSC:"CNRB0001" },
+    { EMP_ID:"SZC0004", FULL_NAME:"Meena R", EMAIL:"meena@sapzcodes.com", DESIGNATION:"HR Executive", DEPARTMENT:"HR", JOIN_DATE:"2025-04-01", BASIC:"20000", HRA:"8000", SPECIAL_ALLOWANCE:"3500", OTHER_ALLOWANCE:"1500", PF_APPLICABLE:"YES", ESI_APPLICABLE:"YES", PT_APPLICABLE:"YES", STATUS:"ACTIVE", OFFER_LETTER_SENT:"YES", BANK_NAME:"Axis", ACCOUNT_NO:"321654987", IFSC:"UTIB0001" },
+    { EMP_ID:"SZC0005", FULL_NAME:"Karthik B", EMAIL:"karthik@sapzcodes.com", DESIGNATION:"SAP FI Lead", DEPARTMENT:"Consulting", JOIN_DATE:"2024-12-01", BASIC:"45000", HRA:"18000", SPECIAL_ALLOWANCE:"8000", OTHER_ALLOWANCE:"3000", PF_APPLICABLE:"YES", ESI_APPLICABLE:"NO", PT_APPLICABLE:"YES", STATUS:"INACTIVE", OFFER_LETTER_SENT:"YES", BANK_NAME:"ICICI", ACCOUNT_NO:"789123456", IFSC:"ICIC0001" },
+  ];
+  renderTable(allEmployees);
+  populateDeptFilter();
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────
+function showToast(msg, type = "success") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast " + type + " show";
+  setTimeout(() => t.classList.remove("show"), 3500);
+}
+
+window.onload = () => {
+  if (checkAuth()) init();
+  document.getElementById("loginToken").addEventListener("keydown", e => { if (e.key==="Enter") doLogin(); });
+};
+</script>
+</body>
+</html>
