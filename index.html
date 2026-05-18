@@ -3,483 +3,19 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SAPZCODES — Payroll</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
-<style>
-  :root {
-    --bg:       #0a0a0f;
-    --surface:  #111118;
-    --border:   #1e1e2e;
-    --accent:   #6c63ff;
-    --accent2:  #00e5a0;
-    --danger:   #ff4d6d;
-    --warn:     #ffa94d;
-    --text:     #e8e8f0;
-    --muted:    #6b6b80;
-    --card:     #13131c;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'DM Mono', monospace;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    overflow-x: hidden;
-  }
-
-  /* ── SIDEBAR ── */
-  .sidebar {
-    width: 240px;
-    min-height: 100vh;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 0; left: 0; bottom: 0;
-    z-index: 100;
-  }
-  .logo {
-    padding: 28px 24px 20px;
-    border-bottom: 1px solid var(--border);
-  }
-  .logo-name {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.1rem;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-  }
-  .logo-sub {
-    font-size: 0.65rem;
-    color: var(--muted);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-top: 3px;
-  }
-  nav { flex: 1; padding: 16px 12px; }
-  .nav-section {
-    font-size: 0.6rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding: 12px 12px 6px;
-    margin-top: 8px;
-  }
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.78rem;
-    color: var(--muted);
-    transition: all 0.2s;
-    text-decoration: none;
-    border: 1px solid transparent;
-  }
-  .nav-item:hover { color: var(--text); background: var(--border); }
-  .nav-item.active {
-    color: var(--accent);
-    background: rgba(108,99,255,0.1);
-    border-color: rgba(108,99,255,0.3);
-  }
-  .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
-  .sidebar-footer {
-    padding: 16px;
-    border-top: 1px solid var(--border);
-  }
-  .admin-badge {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    background: rgba(108,99,255,0.08);
-    border: 1px solid rgba(108,99,255,0.2);
-    border-radius: 8px;
-  }
-  .admin-avatar {
-    width: 30px; height: 30px;
-    background: var(--accent);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 0.75rem;
-    color: #fff;
-    flex-shrink: 0;
-  }
-  .admin-info { min-width: 0; }
-  .admin-name { font-size: 0.72rem; color: var(--text); font-weight: 500; }
-  .admin-role { font-size: 0.6rem; color: var(--accent); letter-spacing: 0.1em; }
-  .logout-btn {
-    margin-top: 10px;
-    width: 100%;
-    padding: 8px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
-
-  /* ── MAIN ── */
-  .main {
-    margin-left: 240px;
-    flex: 1;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  .topbar {
-    padding: 20px 32px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--surface);
-    position: sticky;
-    top: 0;
-    z-index: 50;
-  }
-  .page-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.25rem;
-  }
-  .topbar-right { display: flex; align-items: center; gap: 12px; }
-  .month-badge {
-    font-size: 0.7rem;
-    padding: 6px 12px;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    color: var(--muted);
-    letter-spacing: 0.05em;
-  }
-  .run-btn {
-    padding: 8px 18px;
-    background: var(--accent);
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s;
-    letter-spacing: 0.05em;
-  }
-  .run-btn:hover { background: #7c75ff; transform: translateY(-1px); }
-
-  .content { padding: 28px 32px; flex: 1; }
-
-  /* ── LOGIN OVERLAY ── */
-  .login-overlay {
-    position: fixed; inset: 0;
-    background: var(--bg);
-    z-index: 999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .login-box {
-    width: 380px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 40px 36px;
-    animation: fadeUp 0.4s ease;
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .login-logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.5rem;
-    color: var(--accent);
-    margin-bottom: 4px;
-  }
-  .login-sub { font-size: 0.72rem; color: var(--muted); margin-bottom: 32px; letter-spacing: 0.05em; }
-  .field { margin-bottom: 16px; }
-  .field label { display: block; font-size: 0.68rem; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.1em; text-transform: uppercase; }
-  .field input {
-    width: 100%;
-    padding: 10px 14px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.82rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .field input:focus { border-color: var(--accent); }
-  .login-err { font-size: 0.72rem; color: var(--danger); margin-bottom: 12px; min-height: 18px; }
-  .login-submit {
-    width: 100%;
-    padding: 11px;
-    background: var(--accent);
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.82rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.05em;
-  }
-  .login-submit:hover { background: #7c75ff; }
-  .login-note { font-size: 0.65rem; color: var(--muted); margin-top: 16px; text-align: center; }
-
-  /* ── STAT CARDS ── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 28px;
-  }
-  .stat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    position: relative;
-    overflow: hidden;
-    animation: fadeUp 0.4s ease both;
-  }
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-  }
-  .stat-card.c1::before { background: var(--accent); }
-  .stat-card.c2::before { background: var(--accent2); }
-  .stat-card.c3::before { background: var(--warn); }
-  .stat-card.c4::before { background: var(--danger); }
-  .stat-card:nth-child(1) { animation-delay: 0.05s; }
-  .stat-card:nth-child(2) { animation-delay: 0.1s; }
-  .stat-card:nth-child(3) { animation-delay: 0.15s; }
-  .stat-card:nth-child(4) { animation-delay: 0.2s; }
-  .stat-label { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 10px; }
-  .stat-value {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.8rem;
-    line-height: 1;
-    margin-bottom: 6px;
-  }
-  .stat-card.c1 .stat-value { color: var(--accent); }
-  .stat-card.c2 .stat-value { color: var(--accent2); }
-  .stat-card.c3 .stat-value { color: var(--warn); }
-  .stat-card.c4 .stat-value { color: var(--danger); }
-  .stat-sub { font-size: 0.68rem; color: var(--muted); }
-  .stat-icon {
-    position: absolute;
-    top: 18px; right: 18px;
-    font-size: 1.6rem;
-    opacity: 0.15;
-  }
-
-  /* ── TWO COL ── */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-
-  /* ── PANEL ── */
-  .panel {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    animation: fadeUp 0.5s ease both;
-  }
-  .panel-head {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .panel-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 0.88rem;
-  }
-  .panel-action {
-    font-size: 0.68rem;
-    color: var(--accent);
-    cursor: pointer;
-    letter-spacing: 0.05em;
-    text-decoration: none;
-    border: none;
-    background: none;
-    font-family: 'DM Mono', monospace;
-  }
-  .panel-action:hover { text-decoration: underline; }
-  .panel-body { padding: 16px 20px; }
-
-  /* ── RECENT TABLE ── */
-  .mini-table { width: 100%; border-collapse: collapse; }
-  .mini-table th {
-    font-size: 0.6rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--muted);
-    text-align: left;
-    padding: 0 0 10px;
-    border-bottom: 1px solid var(--border);
-  }
-  .mini-table td {
-    font-size: 0.75rem;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(30,30,46,0.6);
-    color: var(--text);
-  }
-  .mini-table tr:last-child td { border-bottom: none; }
-  .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 0.6rem;
-    letter-spacing: 0.08em;
-    font-weight: 500;
-  }
-  .badge-green { background: rgba(0,229,160,0.1); color: var(--accent2); border: 1px solid rgba(0,229,160,0.2); }
-  .badge-red   { background: rgba(255,77,109,0.1); color: var(--danger); border: 1px solid rgba(255,77,109,0.2); }
-  .badge-warn  { background: rgba(255,169,77,0.1); color: var(--warn);   border: 1px solid rgba(255,169,77,0.2); }
-  .badge-blue  { background: rgba(108,99,255,0.1); color: var(--accent); border: 1px solid rgba(108,99,255,0.2); }
-
-  /* ── PENDING TASKS ── */
-  .task-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(30,30,46,0.6);
-    font-size: 0.75rem;
-  }
-  .task-item:last-child { border-bottom: none; }
-  .task-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .task-text { flex: 1; color: var(--text); }
-  .task-time { font-size: 0.65rem; color: var(--muted); }
-
-  /* ── PAYROLL SUMMARY BAR ── */
-  .summary-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(30,30,46,0.6);
-    font-size: 0.78rem;
-  }
-  .summary-row:last-child { border-bottom: none; }
-  .summary-label { color: var(--muted); font-size: 0.72rem; }
-  .summary-value { font-family: 'Syne', sans-serif; font-weight: 700; }
-
-  /* ── MODAL ── */
-  .modal-bg {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-  }
-  .modal-bg.open { display: flex; }
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    width: 480px;
-    max-width: 95vw;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 32px;
-    animation: fadeUp 0.3s ease;
-  }
-  .modal-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.1rem;
-    margin-bottom: 6px;
-  }
-  .modal-sub { font-size: 0.72rem; color: var(--muted); margin-bottom: 24px; }
-  .modal-close {
-    float: right;
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 1.2rem;
-    cursor: pointer;
-    margin-top: -4px;
-  }
-  .modal-close:hover { color: var(--text); }
-
-  /* ── TOAST ── */
-  .toast {
-    position: fixed;
-    bottom: 24px; right: 24px;
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-size: 0.78rem;
-    z-index: 999;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.3s;
-    pointer-events: none;
-  }
-  .toast.show { opacity: 1; transform: translateY(0); }
-  .toast.success { background: rgba(0,229,160,0.15); border: 1px solid rgba(0,229,160,0.3); color: var(--accent2); }
-  .toast.error   { background: rgba(255,77,109,0.15); border: 1px solid rgba(255,77,109,0.3); color: var(--danger); }
-
-  /* ── LOADING ── */
-  .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 0.78rem; letter-spacing: 0.1em; }
-  .pulse { animation: pulse 1.5s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-  /* ── CONFIG BANNER ── */
-  .config-banner {
-    background: rgba(255,169,77,0.08);
-    border: 1px solid rgba(255,169,77,0.2);
-    border-radius: 10px;
-    padding: 12px 16px;
-    font-size: 0.75rem;
-    color: var(--warn);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  @media (max-width: 1100px) {
-    .stats-grid { grid-template-columns: repeat(2,1fr); }
-    .two-col { grid-template-columns: 1fr; }
-  }
-</style>
+<title>SAPZCODES — Payroll Dashboard</title>
+<link rel="icon" href="favicon.png" />
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <!-- ── LOGIN OVERLAY ── -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-box">
-    <div class="login-logo">SAPZCODES</div>
-    <div class="login-sub">Payroll Management System — HR Access Only</div>
+    <div class="login-logo-wrap">
+      <img src="logoforblack.png" alt="SAPZCODES" style="filter:none; width:180px;" />
+    </div>
+    <div class="login-sub" style="margin-top:6px;">Payroll Management System — HR Access Only</div>
     <div class="field">
       <label>Email</label>
       <input type="email" id="loginEmail" placeholder="hr@sapzcodes.com" />
@@ -496,8 +32,8 @@
 
 <!-- ── SIDEBAR ── -->
 <div class="sidebar">
-  <div class="logo">
-    <div class="logo-name">SAPZCODES</div>
+  <div class="sidebar-logo">
+    <img src="logoforblack.png" alt="SAPZCODES" />
     <div class="logo-sub">Payroll System</div>
   </div>
   <nav>
@@ -523,7 +59,7 @@
       <span class="nav-icon">📊</span> Reports
     </a>
     <a class="nav-item" href="fnf.html">
-      <span class="nav-icon">🔚</span> Full & Final
+      <span class="nav-icon">🔚</span> Full &amp; Final
     </a>
     <a class="nav-item" href="audit.html">
       <span class="nav-icon">🗂</span> Audit Log
@@ -534,7 +70,7 @@
       <div class="admin-avatar">HR</div>
       <div class="admin-info">
         <div class="admin-name">hr@sapzcodes.com</div>
-        <div class="admin-role">ADMINISTRATOR</div>
+        <div class="admin-role">Administrator</div>
       </div>
     </div>
     <button class="logout-btn" onclick="doLogout()">↩ Logout</button>
@@ -547,18 +83,17 @@
     <div class="page-title">Dashboard</div>
     <div class="topbar-right">
       <div class="month-badge" id="currentMonthBadge">— / —</div>
-      <button class="run-btn" onclick="openRunModal()">⚡ Run Payroll</button>
+      <button class="btn btn-primary" onclick="openRunModal()">⚡ Run Payroll</button>
     </div>
   </div>
 
   <div class="content">
-    <!-- Config banner - shown if API URL not set -->
     <div class="config-banner" id="configBanner" style="display:none">
       ⚠️ &nbsp;Apps Script URL not configured. Open <b>config.js</b> and paste your Web App URL.
     </div>
 
     <!-- Stats -->
-    <div class="stats-grid" id="statsGrid">
+    <div class="stats-grid">
       <div class="stat-card c1">
         <div class="stat-label">Total Employees</div>
         <div class="stat-value pulse" id="statTotal">—</div>
@@ -587,8 +122,7 @@
 
     <!-- Two col -->
     <div class="two-col">
-      <!-- Recent Employees -->
-      <div class="panel" style="animation-delay:0.25s">
+      <div class="panel" style="animation-delay:0.15s">
         <div class="panel-head">
           <div class="panel-title">Recent Employees</div>
           <a class="panel-action" href="employees.html">View All →</a>
@@ -598,8 +132,7 @@
         </div>
       </div>
 
-      <!-- Payroll Summary -->
-      <div class="panel" style="animation-delay:0.3s">
+      <div class="panel" style="animation-delay:0.2s">
         <div class="panel-head">
           <div class="panel-title">This Month Summary</div>
           <a class="panel-action" href="payroll-run.html">Details →</a>
@@ -610,8 +143,7 @@
       </div>
     </div>
 
-    <!-- Audit log snippet -->
-    <div class="panel" style="animation-delay:0.35s">
+    <div class="panel" style="animation-delay:0.25s">
       <div class="panel-head">
         <div class="panel-title">Recent Activity</div>
         <a class="panel-action" href="audit.html">Full Log →</a>
@@ -628,7 +160,7 @@
   <div class="modal">
     <button class="modal-close" onclick="closeRunModal()">✕</button>
     <div class="modal-title">Run Payroll</div>
-    <div class="modal-sub">This will compute salary for all active employees for the selected month.</div>
+    <div class="modal-sub">Compute salary for all active employees for the selected month.</div>
     <div class="field">
       <label>Month</label>
       <input type="number" id="runMonth" min="1" max="12" placeholder="e.g. 6" />
@@ -637,42 +169,47 @@
       <label>Year</label>
       <input type="number" id="runYear" placeholder="e.g. 2025" />
     </div>
-    <button class="run-btn" style="width:100%;margin-top:8px" onclick="triggerPayrollRun()">⚡ Process Payroll</button>
+    <button class="btn btn-primary btn-full" style="margin-top:8px" onclick="triggerPayrollRun()">⚡ Process Payroll</button>
   </div>
 </div>
 
-<!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
+<style>
+  /* Mini table inside panel-body */
+  .mini-table { width: 100%; border-collapse: collapse; }
+  .mini-table th {
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); text-align: left; padding: 0 0 8px;
+    border-bottom: 1px solid var(--border); font-weight: 700;
+  }
+  .mini-table td {
+    font-size: 12px; padding: 9px 0; border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .mini-table tr:last-child td { border-bottom: none; }
+  .mini-table tr:hover td { background: transparent; }
+</style>
+
 <script>
-// ─── CONFIG ─────────────────────────────────────────────────
-// PASTE YOUR APPS SCRIPT WEB APP URL BELOW
-const API_URL = "https://script.google.com/macros/s/AKfycbzdjsklfEPMmA17LcHknasvTCpTztAcqEwBdu3FCD5zi1kpAmNMKyMmaMVbYvz3S8RJ/exec";
-// ADMIN TOKEN (same as set in Script Properties)
+const API_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
 let ADMIN_TOKEN = "";
 
-// ─── AUTH ────────────────────────────────────────────────────
 function doLogin() {
   const email = document.getElementById("loginEmail").value.trim();
   const token = document.getElementById("loginToken").value.trim();
   const err   = document.getElementById("loginErr");
-
   if (email !== "hr@sapzcodes.com") {
     err.textContent = "Access restricted to hr@sapzcodes.com only.";
-    return;
+    err.classList.add("show"); return;
   }
-  if (!token) {
-    err.textContent = "Admin token is required.";
-    return;
-  }
-
+  if (!token) { err.textContent = "Admin token is required."; err.classList.add("show"); return; }
   ADMIN_TOKEN = token;
   sessionStorage.setItem("szc_token", token);
   sessionStorage.setItem("szc_email", email);
   document.getElementById("loginOverlay").style.display = "none";
   initDashboard();
 }
-
 function checkAuth() {
   const token = sessionStorage.getItem("szc_token");
   const email = sessionStorage.getItem("szc_email");
@@ -683,144 +220,87 @@ function checkAuth() {
   }
   return false;
 }
+function doLogout() { sessionStorage.clear(); location.reload(); }
 
-function doLogout() {
-  sessionStorage.clear();
-  location.reload();
-}
-
-// ─── API ─────────────────────────────────────────────────────
 async function apiGet(action, extra = {}) {
   if (API_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") {
-    document.getElementById("configBanner").style.display = "flex";
-    return null;
+    document.getElementById("configBanner").style.display = "flex"; return null;
   }
   const params = new URLSearchParams({ action, token: ADMIN_TOKEN, ...extra });
   const res = await fetch(`${API_URL}?${params}`);
   return res.json();
 }
-
 async function apiPost(body) {
-  const res = await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({ ...body, token: ADMIN_TOKEN })
-  });
+  const res = await fetch(API_URL, { method: "POST", body: JSON.stringify({ ...body, token: ADMIN_TOKEN }) });
   return res.json();
 }
 
-// ─── DASHBOARD INIT ──────────────────────────────────────────
 async function initDashboard() {
   setCurrentMonth();
-  if (API_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") {
-    loadMockData();
-    return;
-  }
-  await Promise.all([
-    loadEmployeeStats(),
-    loadPayrollSummary(),
-    loadAuditLog()
-  ]);
+  if (API_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") { loadMockData(); return; }
+  await Promise.all([loadEmployeeStats(), loadPayrollSummary(), loadAuditLog()]);
 }
-
 function setCurrentMonth() {
   const now = new Date();
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  document.getElementById("currentMonthBadge").textContent =
-    months[now.getMonth()] + " " + now.getFullYear();
-  const mi = document.getElementById("runMonth");
-  const yi = document.getElementById("runYear");
-  if (mi) mi.value = now.getMonth() + 1;
-  if (yi) yi.value = now.getFullYear();
+  document.getElementById("currentMonthBadge").textContent = months[now.getMonth()] + " " + now.getFullYear();
+  const mi = document.getElementById("runMonth"); const yi = document.getElementById("runYear");
+  if (mi) mi.value = now.getMonth() + 1; if (yi) yi.value = now.getFullYear();
 }
 
-// ─── EMPLOYEE STATS ──────────────────────────────────────────
 async function loadEmployeeStats() {
-  const data = await apiGet("getEmployees");
-  if (!data) return;
-
-  const total  = data.length;
-  const active = data.filter(e => e.STATUS === "ACTIVE").length;
-  document.getElementById("statTotal").textContent  = total;
+  const data = await apiGet("getEmployees"); if (!data) return;
+  const total = data.length; const active = data.filter(e => e.STATUS === "ACTIVE").length;
+  document.getElementById("statTotal").textContent = total;
   document.getElementById("statActive").textContent = "Active: " + active;
-
-  // Recent 5 employees
-  const recent = data.slice(-5).reverse();
-  renderRecentEmps(recent);
+  renderRecentEmps(data.slice(-5).reverse());
 }
-
 function renderRecentEmps(list) {
   const el = document.getElementById("recentEmpsBody");
   if (!list.length) { el.innerHTML = '<div class="loading">No employees yet.</div>'; return; }
-  el.innerHTML = `
-    <table class="mini-table">
-      <thead><tr>
-        <th>ID</th><th>Name</th><th>Designation</th><th>Status</th>
-      </tr></thead>
-      <tbody>
-        ${list.map(e => `
-          <tr>
-            <td style="color:var(--muted)">${e.EMP_ID}</td>
-            <td>${e.FULL_NAME}</td>
-            <td style="color:var(--muted)">${e.DESIGNATION}</td>
-            <td><span class="badge ${e.STATUS==='ACTIVE'?'badge-green':'badge-red'}">${e.STATUS}</span></td>
-          </tr>`).join("")}
-      </tbody>
-    </table>`;
+  el.innerHTML = `<table class="mini-table">
+    <thead><tr><th>ID</th><th>Name</th><th>Designation</th><th>Status</th></tr></thead>
+    <tbody>${list.map(e => `<tr>
+      <td style="color:var(--muted);font-family:var(--mono);font-size:11px">${e.EMP_ID}</td>
+      <td style="font-weight:600">${e.FULL_NAME}</td>
+      <td style="color:var(--muted)">${e.DESIGNATION}</td>
+      <td><span class="badge ${e.STATUS==='ACTIVE'?'badge-green':'badge-red'}">${e.STATUS}</span></td>
+    </tr>`).join("")}</tbody></table>`;
 }
 
-// ─── PAYROLL SUMMARY ─────────────────────────────────────────
 async function loadPayrollSummary() {
-  const now   = new Date();
-  const month = now.getMonth() + 1;
-  const year  = now.getFullYear();
-  const data  = await apiGet("getPayrollRun", { month, year });
-  if (!data) return;
-
-  const totalGross = data.reduce((s, r) => s + Number(r.GROSS || 0), 0);
-  const totalNet   = data.reduce((s, r) => s + Number(r.NET_PAY || 0), 0);
-  const totalPF    = data.reduce((s, r) => s + Number(r.PF_EMP || 0), 0);
-  const totalTDS   = data.reduce((s, r) => s + Number(r.TDS || 0), 0);
-  const count      = data.length;
-
-  document.getElementById("statPayroll").textContent  = "₹" + fmt(totalNet);
-  document.getElementById("statProcessed").textContent = "Processed: " + count;
-  document.getElementById("statPending").textContent  = count === 0 ? "1" : "0";
-
-  document.getElementById("payrollSummary").innerHTML = count === 0
+  const now = new Date(); const month = now.getMonth()+1; const year = now.getFullYear();
+  const data = await apiGet("getPayrollRun", { month, year }); if (!data) return;
+  const totalGross=data.reduce((s,r)=>s+Number(r.GROSS||0),0);
+  const totalNet=data.reduce((s,r)=>s+Number(r.NET_PAY||0),0);
+  const totalPF=data.reduce((s,r)=>s+Number(r.PF_EMP||0),0);
+  const totalTDS=data.reduce((s,r)=>s+Number(r.TDS||0),0);
+  document.getElementById("statPayroll").textContent = "₹"+fmt(totalNet);
+  document.getElementById("statProcessed").textContent = "Processed: "+data.length;
+  document.getElementById("statPending").textContent = data.length===0?"1":"0";
+  document.getElementById("payrollSummary").innerHTML = data.length===0
     ? '<div class="loading">No payroll run this month yet.</div>'
-    : `
-      <div class="summary-row"><span class="summary-label">Gross Payout</span><span class="summary-value" style="color:var(--accent2)">₹${fmt(totalGross)}</span></div>
-      <div class="summary-row"><span class="summary-label">Net Payout</span><span class="summary-value" style="color:var(--accent)">₹${fmt(totalNet)}</span></div>
-      <div class="summary-row"><span class="summary-label">PF Contributions</span><span class="summary-value">₹${fmt(totalPF)}</span></div>
-      <div class="summary-row"><span class="summary-label">TDS Withheld</span><span class="summary-value">₹${fmt(totalTDS)}</span></div>
-      <div class="summary-row"><span class="summary-label">Employees Processed</span><span class="summary-value">${count}</span></div>`;
+    : `<div class="summary-row"><span class="summary-label">Gross Payout</span><span class="summary-value" style="color:var(--green-dk)">₹${fmt(totalGross)}</span></div>
+       <div class="summary-row"><span class="summary-label">Net Payout</span><span class="summary-value" style="color:var(--info)">₹${fmt(totalNet)}</span></div>
+       <div class="summary-row"><span class="summary-label">PF Contributions</span><span class="summary-value">₹${fmt(totalPF)}</span></div>
+       <div class="summary-row"><span class="summary-label">TDS Withheld</span><span class="summary-value">₹${fmt(totalTDS)}</span></div>
+       <div class="summary-row"><span class="summary-label">Employees Processed</span><span class="summary-value">${data.length}</span></div>`;
 }
 
-// ─── AUDIT LOG ───────────────────────────────────────────────
 async function loadAuditLog() {
-  const data = await apiGet("getAuditLog");
-  if (!data) return;
-
-  const recent = data.slice(-8).reverse();
-  const el = document.getElementById("auditBody");
+  const data = await apiGet("getAuditLog"); if (!data) return;
+  const recent = data.slice(-8).reverse(); const el = document.getElementById("auditBody");
   if (!recent.length) { el.innerHTML = '<div class="loading">No activity yet.</div>'; return; }
-
-  el.innerHTML = `
-    <table class="mini-table">
-      <thead><tr><th>Time</th><th>Action</th><th>By</th><th>Details</th></tr></thead>
-      <tbody>
-        ${recent.map(r => `
-          <tr>
-            <td style="color:var(--muted);white-space:nowrap">${r.TIMESTAMP}</td>
-            <td><span class="badge badge-blue">${r.ACTION}</span></td>
-            <td style="color:var(--muted)">${r.PERFORMED_BY}</td>
-            <td>${r.DETAILS}</td>
-          </tr>`).join("")}
-      </tbody>
-    </table>`;
+  el.innerHTML = `<table class="mini-table">
+    <thead><tr><th>Time</th><th>Action</th><th>By</th><th>Details</th></tr></thead>
+    <tbody>${recent.map(r=>`<tr>
+      <td style="color:var(--muted);white-space:nowrap;font-family:var(--mono);font-size:11px">${r.TIMESTAMP}</td>
+      <td><span class="badge badge-blue">${r.ACTION}</span></td>
+      <td style="color:var(--muted)">${r.PERFORMED_BY}</td>
+      <td style="color:var(--text2)">${r.DETAILS}</td>
+    </tr>`).join("")}</tbody></table>`;
 }
 
-// ─── RUN PAYROLL ─────────────────────────────────────────────
 function openRunModal()  { document.getElementById("runModal").classList.add("open"); }
 function closeRunModal() { document.getElementById("runModal").classList.remove("open"); }
 
@@ -828,27 +308,20 @@ async function triggerPayrollRun() {
   const month = document.getElementById("runMonth").value;
   const year  = document.getElementById("runYear").value;
   if (!month || !year) { showToast("Enter month and year", "error"); return; }
-
   showToast("Processing payroll...", "success");
   const res = await apiPost({ action: "runPayroll", month: Number(month), year: Number(year) });
   closeRunModal();
-  if (res?.success) {
-    showToast(`✅ Payroll done — ${res.processed} employees processed`, "success");
-    await loadPayrollSummary();
-  } else {
-    showToast("Error: " + (res?.error || "Unknown"), "error");
-  }
+  if (res?.success) { showToast(`✅ Payroll done — ${res.processed} employees`, "success"); await loadPayrollSummary(); }
+  else showToast("Error: " + (res?.error || "Unknown"), "error");
 }
 
-// ─── MOCK DATA (when API not configured) ─────────────────────
 function loadMockData() {
-  document.getElementById("statTotal").textContent     = "12";
-  document.getElementById("statActive").textContent    = "Active: 11";
-  document.getElementById("statPayroll").textContent   = "₹4.2L";
+  document.getElementById("statTotal").textContent = "12";
+  document.getElementById("statActive").textContent = "Active: 11";
+  document.getElementById("statPayroll").textContent = "₹4.2L";
   document.getElementById("statProcessed").textContent = "Processed: 11";
-  document.getElementById("statPending").textContent   = "3";
-  document.getElementById("statReim").textContent      = "2";
-
+  document.getElementById("statPending").textContent = "3";
+  document.getElementById("statReim").textContent = "2";
   renderRecentEmps([
     { EMP_ID:"SZC0001", FULL_NAME:"Ashok Kumar", DESIGNATION:"ABAP Developer", STATUS:"ACTIVE" },
     { EMP_ID:"SZC0002", FULL_NAME:"Priya S", DESIGNATION:"SAP Consultant", STATUS:"ACTIVE" },
@@ -856,45 +329,32 @@ function loadMockData() {
     { EMP_ID:"SZC0004", FULL_NAME:"Meena R", DESIGNATION:"HR Executive", STATUS:"ACTIVE" },
     { EMP_ID:"SZC0005", FULL_NAME:"Karthik B", DESIGNATION:"SAP FI Lead", STATUS:"INACTIVE" },
   ]);
-
   document.getElementById("payrollSummary").innerHTML = `
-    <div class="summary-row"><span class="summary-label">Gross Payout</span><span class="summary-value" style="color:var(--accent2)">₹4,80,000</span></div>
-    <div class="summary-row"><span class="summary-label">Net Payout</span><span class="summary-value" style="color:var(--accent)">₹4,20,000</span></div>
+    <div class="summary-row"><span class="summary-label">Gross Payout</span><span class="summary-value" style="color:var(--green-dk)">₹4,80,000</span></div>
+    <div class="summary-row"><span class="summary-label">Net Payout</span><span class="summary-value" style="color:var(--info)">₹4,20,000</span></div>
     <div class="summary-row"><span class="summary-label">PF Contributions</span><span class="summary-value">₹28,800</span></div>
     <div class="summary-row"><span class="summary-label">TDS Withheld</span><span class="summary-value">₹18,500</span></div>
     <div class="summary-row"><span class="summary-label">Employees Processed</span><span class="summary-value">11</span></div>`;
-
-  document.getElementById("auditBody").innerHTML = `
-    <table class="mini-table">
-      <thead><tr><th>Time</th><th>Action</th><th>By</th><th>Details</th></tr></thead>
-      <tbody>
-        <tr><td style="color:var(--muted)">17/05/2025 10:32</td><td><span class="badge badge-blue">ADD_EMPLOYEE</span></td><td style="color:var(--muted)">hr@sapzcodes.com</td><td>New employee added: Ravi M</td></tr>
-        <tr><td style="color:var(--muted)">17/05/2025 09:15</td><td><span class="badge badge-blue">PAYROLL_RUN</span></td><td style="color:var(--muted)">hr@sapzcodes.com</td><td>Payroll run for 5/2025 — 11 employees</td></tr>
-        <tr><td style="color:var(--muted)">16/05/2025 14:22</td><td><span class="badge badge-blue">OFFER_LETTER_SENT</span></td><td style="color:var(--muted)">hr@sapzcodes.com</td><td>Offer letter emailed to ravi@mail.com</td></tr>
-        <tr><td style="color:var(--muted)">15/05/2025 11:00</td><td><span class="badge badge-blue">UPDATE_EMPLOYEE</span></td><td style="color:var(--muted)">hr@sapzcodes.com</td><td>Employee updated: SZC0002</td></tr>
-      </tbody>
-    </table>`;
+  document.getElementById("auditBody").innerHTML = `<table class="mini-table">
+    <thead><tr><th>Time</th><th>Action</th><th>By</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr><td style="color:var(--muted);font-family:var(--mono);font-size:11px">17/05/2025 10:32</td><td><span class="badge badge-blue">ADD_EMPLOYEE</span></td><td style="color:var(--muted)">hr@sapzcodes.com</td><td>New employee added: Ravi M</td></tr>
+      <tr><td style="color:var(--muted);font-family:var(--mono);font-size:11px">17/05/2025 09:15</td><td><span class="badge badge-warn">PAYROLL_RUN</span></td><td style="color:var(--muted)">hr@sapzcodes.com</td><td>Payroll run for 5/2025 — 11 employees</td></tr>
+      <tr><td style="color:var(--muted);font-family:var(--mono);font-size:11px">16/05/2025 14:22</td><td><span class="badge badge-green">OFFER_LETTER</span></td><td style="color:var(--muted)">hr@sapzcodes.com</td><td>Offer letter emailed to ravi@mail.com</td></tr>
+      <tr><td style="color:var(--muted);font-family:var(--mono);font-size:11px">15/05/2025 11:00</td><td><span class="badge badge-blue">UPDATE_EMPLOYEE</span></td><td style="color:var(--muted)">hr@sapzcodes.com</td><td>Employee updated: SZC0002</td></tr>
+    </tbody></table>`;
 }
 
-// ─── HELPERS ─────────────────────────────────────────────────
-function fmt(n) {
-  return Number(n).toLocaleString("en-IN", { maximumFractionDigits: 0 });
-}
-
+function fmt(n) { return Number(n).toLocaleString("en-IN", { maximumFractionDigits: 0 }); }
 function showToast(msg, type = "success") {
   const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.className = "toast " + type + " show";
+  t.textContent = msg; t.className = "toast " + type + " show";
   setTimeout(() => t.classList.remove("show"), 3500);
 }
 
-// ─── BOOT ────────────────────────────────────────────────────
 window.onload = () => {
   if (checkAuth()) initDashboard();
-  // Allow Enter key on login
-  document.getElementById("loginToken").addEventListener("keydown", e => {
-    if (e.key === "Enter") doLogin();
-  });
+  document.getElementById("loginToken").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
 };
 </script>
 </body>
