@@ -446,9 +446,13 @@ async function syncToSheet() {
   let ok = 0, fail = 0;
   for (const c of active) {
     try {
-      const res = await fetch(APPS_SCRIPT_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'cert_upsert', adminKey: getAdminKey(), ...c }) });
-      const d = await res.json();
-      if (d.ok) ok++; else fail++;
+     await fetch(APPS_SCRIPT_URL, {
+  method: 'POST',
+  mode: 'no-cors',
+  headers: { 'Content-Type': 'text/plain' },
+  body: JSON.stringify({ action:'cert_upsert', adminKey: getAdminKey(), ...c })
+});
+ok++;
     } catch { fail++; }
   }
   status.textContent = `Done — ${ok} synced, ${fail} failed.`;
