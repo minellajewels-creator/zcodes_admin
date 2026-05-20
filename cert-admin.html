@@ -1,365 +1,171 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SAPZCODES — Certificate Admin Tool</title>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Exo+2:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Certificate Manager — SAPZCODES Payroll</title>
+<link rel="icon" href="favicon.png"/>
+<link rel="stylesheet" href="style.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --green:        #22a032;
-    --green-light:  #3ddc50;
-    --green-glow:   rgba(34,160,50,.15);
-    --bg:           #060e06;
-    --bg2:          #0c160c;
-    --bg3:          #111b11;
-    --border:       rgba(34,160,50,.18);
-    --border2:      rgba(34,160,50,.3);
-    --text:         #c8e8c8;
-    --text-muted:   rgba(200,232,200,.45);
-    --text-dim:     rgba(200,232,200,.25);
-    --danger:       #dc3545;
-    --amber:        #f5a623;
-    --radius:       10px;
-  }
-
-  body {
-    font-family: 'Exo 2', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
-
-  /* ── TOP BAR ── */
-  .topbar {
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    padding: 0 28px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .logo-txt {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #e0f5e0;
-    letter-spacing: .08em;
-  }
-  .logo-txt span { color: var(--green-light); }
-  .topbar-tag {
-    font-size: .7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .14em;
-    color: var(--text-muted);
-    background: rgba(34,160,50,.1);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 4px 12px;
-  }
-
-  /* ── LAYOUT ── */
-  .main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 36px 24px 80px;
-  }
-
-  .page-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 1.9rem;
-    font-weight: 700;
-    letter-spacing: .03em;
-    margin-bottom: 6px;
-    color: #d8f0d8;
-  }
-  .page-sub {
-    font-size: .88rem;
-    color: var(--text-muted);
-    margin-bottom: 32px;
-  }
-
-  /* ── CARD ── */
-  .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 24px;
-  }
-  .card-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .1em;
-    color: var(--green-light);
-    margin-bottom: 18px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* ── FORM GRID ── */
-  .fg {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 14px;
-    margin-bottom: 18px;
-  }
-  .fi { display: flex; flex-direction: column; gap: 6px; }
-  label {
-    font-size: .72rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .1em;
-    color: var(--text-muted);
-  }
-  input, select {
-    background: rgba(255,255,255,.04);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 10px 12px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: .9rem;
-    outline: none;
-    transition: border .2s, box-shadow .2s;
-  }
-  input:focus, select:focus {
-    border-color: var(--border2);
-    box-shadow: 0 0 0 3px var(--green-glow);
-  }
-  input::placeholder { color: var(--text-dim); }
-  select option { background: #111; color: #ccc; }
-
-  /* ── BUTTONS ── */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    font-family: 'Exo 2', sans-serif;
-    font-weight: 600;
-    font-size: .88rem;
-    padding: 10px 20px;
-    border-radius: 7px;
-    border: none;
-    cursor: pointer;
-    transition: opacity .2s, transform .15s;
-  }
-  .btn:hover { opacity: .85; transform: translateY(-1px); }
-  .btn:active { transform: scale(.97); }
-  .btn-primary { background: linear-gradient(135deg, var(--green), var(--green-light)); color: #040e04; }
-  .btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--text); }
-  .btn-danger { background: rgba(220,53,69,.15); border: 1px solid rgba(220,53,69,.3); color: #ff8a8a; }
-  .btn-sm { padding: 7px 14px; font-size: .8rem; }
-  .btn:disabled { opacity: .35; cursor: not-allowed; transform: none !important; }
-
-  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-
-  /* ── TABLE ── */
-  .tbl-wrap { overflow-x: auto; }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: .85rem;
-  }
-  th {
-    font-size: .68rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .1em;
-    color: var(--text-muted);
-    padding: 10px 12px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-  td {
-    padding: 11px 12px;
-    border-bottom: 1px solid rgba(34,160,50,.07);
-    vertical-align: middle;
-  }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(34,160,50,.04); }
-  .mono { font-family: 'JetBrains Mono', monospace; font-size: .82rem; color: #a0e0a0; }
-
-  /* ── STATUS BADGE ── */
-  .badge {
-    font-size: .68rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .1em;
-    padding: 3px 10px;
-    border-radius: 20px;
-    white-space: nowrap;
-  }
-  .badge-active  { background: rgba(34,160,50,.15); color: var(--green-light); border: 1px solid rgba(34,160,50,.3); }
-  .badge-revoked { background: rgba(220,53,69,.12); color: #ff8a8a; border: 1px solid rgba(220,53,69,.25); }
-
-  /* ── EMPTY STATE ── */
-  .empty {
-    text-align: center;
-    padding: 48px 24px;
-    color: var(--text-dim);
-    font-size: .9rem;
-  }
-
-  /* ── QR MODAL ── */
-  .modal-backdrop {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.75);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal-backdrop.open { display: flex; }
-  .modal {
-    background: var(--bg3);
-    border: 1px solid var(--border2);
-    border-radius: 14px;
-    padding: 32px 28px;
-    width: 90%;
-    max-width: 380px;
-    text-align: center;
-    animation: popIn .2s ease;
-  }
-  @keyframes popIn {
-    from { opacity: 0; transform: scale(.93); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-  .modal-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 1.2rem;
-    font-weight: 700;
-    letter-spacing: .05em;
-    color: #d8f0d8;
-    margin-bottom: 4px;
-  }
-  .modal-sub {
-    font-size: .8rem;
-    color: var(--text-muted);
-    margin-bottom: 20px;
-    font-family: 'JetBrains Mono', monospace;
-  }
-  #qr-canvas {
-    background: #fff;
-    padding: 12px;
-    border-radius: 8px;
-    display: inline-block;
-    margin-bottom: 18px;
-  }
-  .qr-url {
-    font-size: .7rem;
-    color: var(--text-dim);
-    font-family: 'JetBrains Mono', monospace;
-    word-break: break-all;
-    margin-bottom: 20px;
-    line-height: 1.5;
-  }
-
-  /* ── TOAST ── */
-  .toast {
-    position: fixed;
-    bottom: 28px;
-    left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: #1a2e1a;
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    padding: 12px 20px;
-    font-size: .85rem;
-    font-weight: 500;
-    color: var(--text);
-    z-index: 999;
-    transition: transform .3s ease;
-    white-space: nowrap;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-
-  /* ── SHEET IMPORT ── */
-  .import-hint {
-    font-size: .78rem;
-    color: var(--text-muted);
-    line-height: 1.7;
-    margin-top: 10px;
-  }
-  code {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: .8rem;
-    background: rgba(255,255,255,.06);
-    padding: 1px 6px;
-    border-radius: 4px;
-    color: #a0e0a0;
-  }
-
-  /* ── CONFIG ALERT ── */
-  .alert {
-    background: rgba(245,166,35,.08);
-    border: 1px solid rgba(245,166,35,.25);
-    border-radius: var(--radius);
-    padding: 14px 18px;
-    font-size: .85rem;
-    color: rgba(245,220,140,.8);
-    margin-bottom: 20px;
-    line-height: 1.6;
-  }
-  .alert strong { color: var(--amber); }
-</style>
 </head>
 <body>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="logo-txt">SAP<span>Z</span>CODES</div>
-  <div class="topbar-tag">🔐 Certificate Admin</div>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
-
-<!-- QR MODAL -->
-<div class="modal-backdrop" id="modal" onclick="closeModal(event)">
-  <div class="modal">
-    <div class="modal-title" id="qr-name"></div>
-    <div class="modal-sub" id="qr-id"></div>
-    <div id="qr-canvas"></div>
-    <div class="qr-url" id="qr-url-txt"></div>
-    <div class="btn-row" style="justify-content:center">
-      <button class="btn btn-primary btn-sm" onclick="downloadQR()">⬇ Download QR</button>
-      <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <img src="logo.png" alt="SAPZCODES"/>
+    <div class="logo-sub">Payroll System</div>
+  </div>
+  <nav>
+    <div class="nav-section">Main</div>
+    <a class="nav-item" href="index"><span class="nav-icon">⬛</span> Dashboard</a>
+    <a class="nav-item" href="employees"><span class="nav-icon">👤</span> Employees</a>
+    <div class="nav-section">Payroll</div>
+    <a class="nav-item" href="attendance"><span class="nav-icon">📅</span> Attendance</a>
+    <a class="nav-item" href="payroll-run"><span class="nav-icon">⚡</span> Run Payroll</a>
+    <a class="nav-item" href="reimbursements"><span class="nav-icon">🧾</span> Reimbursements</a>
+    <div class="nav-section">Finance</div>
+    <a class="nav-item" href="reports"><span class="nav-icon">📊</span> Reports</a>
+    <a class="nav-item" href="fnf"><span class="nav-icon">🔚</span> Full & Final</a>
+    <a class="nav-item" href="audit"><span class="nav-icon">🗂</span> Audit Log</a>
+    <div class="nav-section">Tools</div>
+    <a class="nav-item active" href="cert-admin"><span class="nav-icon">🏅</span> Certificates</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="admin-badge">
+      <div class="admin-avatar">HR</div>
+      <div class="admin-info">
+        <div class="admin-name">hr@sapzcodes.com</div>
+        <div class="admin-role">ADMINISTRATOR</div>
+      </div>
     </div>
+    <button class="logout-btn" onclick="doLogout()">↩ Logout</button>
   </div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
-  <div class="page-title">🏅 Certificate Manager</div>
-  <div class="page-sub">Generate cert IDs, view QR codes, and manage all issued certificates.</div>
 
-  <div class="alert" id="config-alert">
-    <strong>⚙ Setup required:</strong> Open this file and set <code>VERIFY_BASE_URL</code> and <code>APPS_SCRIPT_URL</code> at the top of the script before use.
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="page-title">🏅 Certificate Manager</div>
+    <div class="topbar-right">
+      <button class="btn btn-secondary btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('addModal').classList.add('open')">✚ New Certificate</button>
+    </div>
   </div>
 
-  <!-- ADD FORM -->
-  <div class="card">
-    <div class="card-title">📋 Issue New Certificate</div>
-    <div class="fg">
-      <div class="fi">
-        <label>Student Name</label>
-        <input type="text" id="f-name" placeholder="Ravi Kumar" autocomplete="off">
+  <div class="content">
+
+    <!-- CONFIG BANNER -->
+    <div class="config-banner" id="configBanner">
+      ⚙ <strong>Setup required:</strong> Set <code>VERIFY_BASE_URL</code> and <code>APPS_SCRIPT_URL</code> at the top of the script before use.
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:22px">
+      <div class="stat-card c1">
+        <div class="stat-label">Total Issued</div>
+        <div class="stat-value" id="s-total">0</div>
+        <div class="stat-icon">🏅</div>
       </div>
-      <div class="fi">
+      <div class="stat-card c2">
+        <div class="stat-label">Active</div>
+        <div class="stat-value" id="s-active">0</div>
+        <div class="stat-icon">✅</div>
+      </div>
+      <div class="stat-card c4">
+        <div class="stat-label">Revoked</div>
+        <div class="stat-value" id="s-revoked">0</div>
+        <div class="stat-icon">🚫</div>
+      </div>
+      <div class="stat-card c3">
+        <div class="stat-label">This Month</div>
+        <div class="stat-value" id="s-month">0</div>
+        <div class="stat-icon">📅</div>
+      </div>
+    </div>
+
+    <!-- BULK IMPORT + SYNC -->
+    <div class="two-col" style="margin-bottom:18px">
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">⚡ Bulk CSV Import</div>
+        </div>
+        <div class="panel-body">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7">
+            One row per line — <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-family:var(--mono);font-size:11px">StudentName, Module, DD-Mon-YYYY, TrainerName</code>
+          </p>
+          <textarea id="csvInput" rows="4" style="width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--mono);font-size:12px;resize:vertical;outline:none;transition:border .18s"
+            placeholder="Ravi Kumar, SAP ABAP, 15-Jan-2025, Mr. Ashok&#10;Priya S, SAP FICO, 16-Jan-2025, Mr. Kumar"
+            onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border2)'"></textarea>
+          <div style="margin-top:10px">
+            <button class="btn btn-primary btn-sm" onclick="importCSV()">⬆ Import & Generate</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">☁ Sync to Google Sheet</div>
+        </div>
+        <div class="panel-body">
+          <p style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px">
+            Push all active certificates to your Google Sheet so the verify page can look them up. Requires your Apps Script URL to be configured.
+          </p>
+          <button class="btn btn-primary btn-sm" onclick="syncToSheet()">☁ Push All Active to Sheet</button>
+          <div id="syncStatus" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CERTIFICATES TABLE -->
+    <div class="table-wrap">
+      <div class="table-head-bar">
+        <div class="table-head-title">📜 Issued Certificates <span id="certCount" style="font-weight:400;color:var(--muted)"></span></div>
+        <div class="search-wrap" style="max-width:240px;margin-bottom:0">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search ID, name, module…" oninput="renderTable()"/>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Cert ID</th>
+            <th>Student Name</th>
+            <th>Module</th>
+            <th>Issue Date</th>
+            <th>Trainer</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+      <div class="empty-state" id="tblEmpty" style="display:none">
+        <div class="empty-icon">🏅</div>
+        <div class="empty-text">No certificates yet.<br/>Issue one using the button above.</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ── ADD CERT MODAL ── -->
+<div class="modal-bg" id="addModal">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('addModal').classList.remove('open')">✕</button>
+    <div class="modal-title">📋 Issue New Certificate</div>
+    <div class="modal-sub">Fill in student details to generate a cert ID and QR code.</div>
+
+    <div class="form-grid">
+      <div class="field full">
+        <label>Student Name</label>
+        <input type="text" id="f-name" placeholder="Ravi Kumar" autocomplete="off"/>
+      </div>
+      <div class="field">
         <label>SAP Module</label>
         <select id="f-module">
           <option value="">— Select Module —</option>
@@ -374,142 +180,86 @@
           <option>SAP S/4HANA</option>
         </select>
       </div>
-      <div class="fi">
+      <div class="field">
         <label>Issue Date</label>
-        <input type="date" id="f-date">
+        <input type="date" id="f-date"/>
       </div>
-      <div class="fi">
+      <div class="field">
         <label>Trainer Name</label>
-        <input type="text" id="f-trainer" placeholder="Mr. Ashok" autocomplete="off">
+        <input type="text" id="f-trainer" placeholder="Mr. Ashok" autocomplete="off"/>
       </div>
-      <div class="fi">
-        <label>Custom Cert ID <span style="color:var(--text-dim)">(optional)</span></label>
-        <input type="text" id="f-id" placeholder="Auto-generated" autocomplete="off" style="font-family:'JetBrains Mono',monospace">
+      <div class="field">
+        <label>Custom Cert ID <span style="color:var(--muted);font-weight:400;text-transform:none">(optional)</span></label>
+        <input type="text" id="f-id" placeholder="Auto-generated" autocomplete="off" style="font-family:var(--mono)"/>
       </div>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="addCert()">✚ Generate Certificate</button>
-      <button class="btn btn-outline" onclick="clearForm()">Clear</button>
-    </div>
-  </div>
 
-  <!-- BULK GENERATE -->
-  <div class="card">
-    <div class="card-title">⚡ Bulk CSV Import</div>
-    <p class="import-hint">
-      Paste CSV rows below — one per line. Format:<br>
-      <code>StudentName, Module, IssueDate (DD-Mon-YYYY), TrainerName</code><br>
-      Example: <code>Ravi Kumar, SAP ABAP, 15-Jan-2025, Mr. Ashok</code>
-    </p>
-    <textarea id="csv-input" rows="5" style="width:100%;margin-top:12px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:7px;padding:12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.82rem;resize:vertical;outline:none" placeholder="Ravi Kumar, SAP ABAP, 15-Jan-2025, Mr. Ashok&#10;Priya S, SAP FICO, 15-Jan-2025, Mr. Kumar"></textarea>
-    <div class="btn-row" style="margin-top:12px">
-      <button class="btn btn-primary" onclick="importCSV()">⬆ Import & Generate</button>
-      <button class="btn btn-outline" onclick="exportCSV()">⬇ Export All as CSV</button>
-    </div>
-  </div>
-
-  <!-- CERTIFICATE LIST -->
-  <div class="card">
-    <div class="card-title" style="justify-content:space-between">
-      <span>📜 Issued Certificates <span id="cert-count" style="color:var(--text-muted);font-weight:400;font-size:.85rem"></span></span>
-      <input type="text" id="search" placeholder="🔍 Search…" oninput="renderTable()" style="max-width:200px;padding:7px 12px;font-size:.82rem">
-    </div>
-    <div class="tbl-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Cert ID</th>
-            <th>Student Name</th>
-            <th>Module</th>
-            <th>Issue Date</th>
-            <th>Trainer</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="tbl-body"></tbody>
-      </table>
-      <div class="empty" id="tbl-empty" style="display:none">No certificates yet. Issue one above.</div>
-    </div>
-  </div>
-
-  <!-- PUSH TO SHEET SECTION -->
-  <div class="card">
-    <div class="card-title">☁ Sync to Google Sheet</div>
-    <p class="import-hint" style="margin-bottom:14px">
-      After generating certificates here, push them to your Google Sheet (Certificates tab) so the verify page can look them up. Requires your Apps Script URL to be set in the config.
-    </p>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="syncToSheet()">☁ Push All Active to Sheet</button>
-      <span id="sync-status" style="font-size:.82rem;color:var(--text-muted)"></span>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="addCert()">✚ Generate Certificate</button>
+      <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
     </div>
   </div>
 </div>
 
+<!-- ── QR MODAL ── -->
+<div class="modal-bg" id="qrModal" onclick="closeQR(event)">
+  <div class="modal" style="max-width:360px;text-align:center">
+    <button class="modal-close" onclick="document.getElementById('qrModal').classList.remove('open')">✕</button>
+    <div class="modal-title" id="qrName" style="margin-bottom:2px"></div>
+    <div class="modal-sub" id="qrId" style="font-family:var(--mono);margin-bottom:16px"></div>
+    <div id="qrCanvas" style="background:#fff;padding:12px;border-radius:var(--radius);display:inline-block;margin-bottom:14px"></div>
+    <div id="qrUrlTxt" style="font-size:11px;color:var(--muted);font-family:var(--mono);word-break:break-all;margin-bottom:18px;line-height:1.6"></div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button class="btn btn-primary btn-sm" onclick="downloadQR()">⬇ Download QR</button>
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('qrModal').classList.remove('open')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
 <script>
-// ─────────────────────────────────────────────────────────────
-// CONFIG — set these before use
-// ─────────────────────────────────────────────────────────────
+// ── CONFIG ──────────────────────────────────────────────────
 const VERIFY_BASE_URL = 'https://sapzcodes.com/verify';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNboYaMXrb4iOykdlUOdgEP8wiZKArt15ObgzVAYjgxUdcTmqzIRgAsN6idnpXmhrIJg/exec';
-// Admin key is NOT stored here — pulled from sessionStorage after login (same as payroll dashboard)
 
-// ─────────────────────────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────────────────────────
+// ── STATE ───────────────────────────────────────────────────
 let certs = JSON.parse(localStorage.getItem('sz_certs') || '[]');
 let currentQRId = null;
 
-function getAdminKey() {
-  // Same token stored by the payroll dashboard login
-  return sessionStorage.getItem('szc_token') || '';
-}
+function getAdminKey() { return sessionStorage.getItem('szc_token') || ''; }
+function doLogout() { sessionStorage.clear(); location.href = 'index'; }
 
-function checkAuth() {
-  if (!getAdminKey()) {
-    // Redirect to payroll dashboard login if not authenticated
-    window.location.href = 'index.html';
-    return false;
-  }
-  return true;
-}
-
-// ─────────────────────────────────────────────────────────────
-// INIT
-// ─────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  if (!checkAuth()) return;
+// ── INIT ────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  if (!getAdminKey()) { location.href = 'index'; return; }
   document.getElementById('f-date').value = todayStr();
-  if (APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
-    document.getElementById('config-alert').style.display = 'none';
+  if (APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE' && VERIFY_BASE_URL !== 'https://sapzcodes.com/verify') {
+    document.getElementById('configBanner').style.display = 'none';
   }
   renderTable();
+  updateStats();
 });
 
-// ─────────────────────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────────────────────
-function todayStr() {
-  return new Date().toISOString().split('T')[0];
-}
+// ── HELPERS ─────────────────────────────────────────────────
+function todayStr() { return new Date().toISOString().split('T')[0]; }
 
 function genId(module) {
   const yr  = new Date().getFullYear();
-  const mod = module.replace('SAP ','').replace('/','').replace(' ','').toUpperCase().slice(0,5);
-  const seq = String(certs.length + 1).padStart(3, '0');
+  const mod = module.replace('SAP ','').replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,5);
+  const seq = String(certs.length + 1).padStart(3,'0');
   const rnd = Math.random().toString(36).slice(2,5).toUpperCase();
   return `SAPZ-${yr}-${mod}-${seq}${rnd}`;
 }
 
-function save() {
-  localStorage.setItem('sz_certs', JSON.stringify(certs));
-}
+function save() { localStorage.setItem('sz_certs', JSON.stringify(certs)); }
 
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2800);
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
 }
 
 function esc(s) {
@@ -522,58 +272,45 @@ function fmtDate(d) {
   return isNaN(dt) ? d : dt.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
 }
 
-// ─────────────────────────────────────────────────────────────
-// ADD CERT
-// ─────────────────────────────────────────────────────────────
-function addCert() {
-  const name    = document.getElementById('f-name').value.trim();
-  const module  = document.getElementById('f-module').value;
-  const date    = document.getElementById('f-date').value;
-  const trainer = document.getElementById('f-trainer').value.trim();
-  const customId = document.getElementById('f-id').value.trim().toUpperCase();
-
-  if (!name || !module || !date || !trainer) {
-    toast('⚠ Please fill all fields.'); return;
-  }
-  if (customId && certs.find(c => c.certId === customId)) {
-    toast('⚠ That Cert ID already exists!'); return;
-  }
-
-  const certId = customId || genId(module);
-  const cert = {
-    certId,
-    studentName: name,
-    module,
-    issueDate: fmtDate(date),
-    trainerName: trainer,
-    status: 'Active',
-    createdAt: new Date().toISOString()
-  };
-
-  certs.unshift(cert);
-  save();
-  renderTable();
-  clearForm();
-  toast(`✅ Certificate ${certId} issued!`);
+function updateStats() {
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('s-total').textContent   = certs.length;
+  document.getElementById('s-active').textContent  = certs.filter(c => c.status === 'Active').length;
+  document.getElementById('s-revoked').textContent = certs.filter(c => c.status === 'Revoked').length;
+  document.getElementById('s-month').textContent   = certs.filter(c => (c.createdAt||'').startsWith(thisMonth)).length;
 }
 
-// ─────────────────────────────────────────────────────────────
-// CLEAR FORM
-// ─────────────────────────────────────────────────────────────
+// ── ADD CERT ────────────────────────────────────────────────
+function addCert() {
+  const name     = document.getElementById('f-name').value.trim();
+  const module   = document.getElementById('f-module').value;
+  const date     = document.getElementById('f-date').value;
+  const trainer  = document.getElementById('f-trainer').value.trim();
+  const customId = document.getElementById('f-id').value.trim().toUpperCase();
+
+  if (!name || !module || !date || !trainer) { showToast('⚠ Please fill all fields.','warn'); return; }
+  if (customId && certs.find(c => c.certId === customId)) { showToast('⚠ That Cert ID already exists!','error'); return; }
+
+  const certId = customId || genId(module);
+  certs.unshift({ certId, studentName: name, module, issueDate: fmtDate(date), trainerName: trainer, status: 'Active', createdAt: new Date().toISOString() });
+  save(); renderTable(); updateStats(); clearForm();
+  document.getElementById('addModal').classList.remove('open');
+  showToast(`✅ Certificate ${certId} issued!`);
+}
+
 function clearForm() {
   ['f-name','f-id','f-trainer'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-module').value = '';
   document.getElementById('f-date').value = todayStr();
 }
 
-// ─────────────────────────────────────────────────────────────
-// RENDER TABLE
-// ─────────────────────────────────────────────────────────────
+// ── RENDER TABLE ─────────────────────────────────────────────
 function renderTable() {
-  const q     = (document.getElementById('search').value || '').toLowerCase();
-  const body  = document.getElementById('tbl-body');
-  const empty = document.getElementById('tbl-empty');
-  const count = document.getElementById('cert-count');
+  const q      = (document.getElementById('searchInput').value || '').toLowerCase();
+  const body   = document.getElementById('tblBody');
+  const empty  = document.getElementById('tblEmpty');
+  const count  = document.getElementById('certCount');
 
   const filtered = certs.filter(c =>
     !q ||
@@ -584,7 +321,7 @@ function renderTable() {
 
   count.textContent = `(${certs.length} total)`;
 
-  if (filtered.length === 0) {
+  if (!filtered.length) {
     body.innerHTML = '';
     empty.style.display = 'block';
     return;
@@ -593,192 +330,129 @@ function renderTable() {
 
   body.innerHTML = filtered.map(c => `
     <tr>
-      <td class="mono">${esc(c.certId)}</td>
-      <td>${esc(c.studentName)}</td>
-      <td style="font-size:.82rem">${esc(c.module)}</td>
-      <td style="font-size:.82rem;color:rgba(200,232,200,.6)">${esc(c.issueDate)}</td>
-      <td style="font-size:.82rem;color:rgba(200,232,200,.6)">${esc(c.trainerName)}</td>
-      <td><span class="badge badge-${c.status.toLowerCase()}">${esc(c.status)}</span></td>
+      <td><span class="mono">${esc(c.certId)}</span></td>
       <td>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn btn-outline btn-sm" onclick="showQR('${esc(c.certId)}')">QR</button>
-          ${c.status === 'Active'
-            ? `<button class="btn btn-sm" style="background:rgba(220,53,69,.12);border:1px solid rgba(220,53,69,.25);color:#ff8a8a" onclick="revokeToggle('${esc(c.certId)}')">Revoke</button>`
-            : `<button class="btn btn-outline btn-sm" onclick="revokeToggle('${esc(c.certId)}')">Restore</button>`
-          }
-          <button class="btn btn-sm" style="background:transparent;border:1px solid var(--border);color:var(--text-muted)" onclick="deleteCert('${esc(c.certId)}')">🗑</button>
+        <div class="emp-cell">
+          <div class="mini-avatar">${(c.studentName||'').split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}</div>
+          <div>
+            <div class="emp-name">${esc(c.studentName)}</div>
+          </div>
         </div>
       </td>
-    </tr>
-  `).join('');
+      <td><span class="badge badge-gray">${esc(c.module)}</span></td>
+      <td style="color:var(--muted);font-size:12px">${esc(c.issueDate)}</td>
+      <td style="color:var(--text2);font-size:12px">${esc(c.trainerName)}</td>
+      <td>
+        <span class="badge ${c.status === 'Active' ? 'badge-green' : 'badge-red'}">${esc(c.status)}</span>
+      </td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-sm-edit" onclick="showQR('${esc(c.certId)}')">QR</button>
+          <button class="btn-sm-edit" style="background:var(--warn-lt);border-color:rgba(217,119,6,.2);color:var(--warn)" onclick="revokeToggle('${esc(c.certId)}')">${c.status === 'Active' ? 'Revoke' : 'Restore'}</button>
+          <button class="btn-sm-del" onclick="deleteCert('${esc(c.certId)}')">🗑</button>
+        </div>
+      </td>
+    </tr>`).join('');
 }
 
-// ─────────────────────────────────────────────────────────────
-// REVOKE / RESTORE
-// ─────────────────────────────────────────────────────────────
+// ── REVOKE / RESTORE ─────────────────────────────────────────
 function revokeToggle(id) {
-  const cert = certs.find(c => c.certId === id);
-  if (!cert) return;
-  cert.status = cert.status === 'Active' ? 'Revoked' : 'Active';
-  save();
-  renderTable();
-  toast(`Certificate ${id} → ${cert.status}`);
+  const c = certs.find(x => x.certId === id);
+  if (!c) return;
+  c.status = c.status === 'Active' ? 'Revoked' : 'Active';
+  save(); renderTable(); updateStats();
+  showToast(`Certificate ${id} → ${c.status}`, c.status === 'Active' ? 'success' : 'warn');
 }
 
-// ─────────────────────────────────────────────────────────────
-// DELETE
-// ─────────────────────────────────────────────────────────────
+// ── DELETE ───────────────────────────────────────────────────
 function deleteCert(id) {
   if (!confirm(`Delete certificate ${id}? This cannot be undone.`)) return;
   certs = certs.filter(c => c.certId !== id);
-  save();
-  renderTable();
-  toast(`🗑 Deleted ${id}`);
+  save(); renderTable(); updateStats();
+  showToast(`🗑 Deleted ${id}`);
 }
 
-// ─────────────────────────────────────────────────────────────
-// QR MODAL
-// ─────────────────────────────────────────────────────────────
+// ── QR MODAL ─────────────────────────────────────────────────
 function showQR(id) {
   const cert = certs.find(c => c.certId === id);
   if (!cert) return;
-
   currentQRId = id;
-  document.getElementById('qr-name').textContent = cert.studentName;
-  document.getElementById('qr-id').textContent   = cert.certId;
-
+  document.getElementById('qrName').textContent = cert.studentName;
+  document.getElementById('qrId').textContent   = cert.certId;
   const url = `${VERIFY_BASE_URL}?id=${encodeURIComponent(cert.certId)}`;
-  document.getElementById('qr-url-txt').textContent = url;
-
-  const canvas = document.getElementById('qr-canvas');
+  document.getElementById('qrUrlTxt').textContent = url;
+  const canvas = document.getElementById('qrCanvas');
   canvas.innerHTML = '';
-  new QRCode(canvas, {
-    text: url,
-    width: 200,
-    height: 200,
-    colorDark: '#000000',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.H
-  });
-
-  document.getElementById('modal').classList.add('open');
+  new QRCode(canvas, { text: url, width: 200, height: 200, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.H });
+  document.getElementById('qrModal').classList.add('open');
 }
 
-function closeModal(e) {
-  if (!e || e.target === document.getElementById('modal') || e.currentTarget === document.getElementById('modal') && !e.target.closest('.modal')) {
-    document.getElementById('modal').classList.remove('open');
+function closeQR(e) {
+  if (e.target === document.getElementById('qrModal')) {
+    document.getElementById('qrModal').classList.remove('open');
   }
 }
 
 function downloadQR() {
-  const canvas = document.querySelector('#qr-canvas canvas') || document.querySelector('#qr-canvas img');
-  if (!canvas) return;
-
-  let src;
-  if (canvas.tagName === 'CANVAS') {
-    src = canvas.toDataURL('image/png');
-  } else {
-    src = canvas.src;
-  }
-
+  const el = document.querySelector('#qrCanvas canvas') || document.querySelector('#qrCanvas img');
+  if (!el) return;
   const a = document.createElement('a');
-  a.href = src;
+  a.href = el.tagName === 'CANVAS' ? el.toDataURL('image/png') : el.src;
   a.download = `QR-${currentQRId}.png`;
   a.click();
 }
 
-// ─────────────────────────────────────────────────────────────
-// BULK CSV IMPORT
-// ─────────────────────────────────────────────────────────────
+// ── BULK CSV IMPORT ───────────────────────────────────────────
 function importCSV() {
-  const raw = document.getElementById('csv-input').value.trim();
-  if (!raw) { toast('⚠ Paste some CSV data first.'); return; }
-
+  const raw = document.getElementById('csvInput').value.trim();
+  if (!raw) { showToast('⚠ Paste CSV data first.','warn'); return; }
   let added = 0;
   raw.split('\n').forEach(line => {
     line = line.trim();
     if (!line) return;
     const [name, module, date, trainer] = line.split(',').map(s => s.trim());
     if (!name || !module || !date || !trainer) return;
-
-    const certId = genId(module);
-    certs.unshift({
-      certId,
-      studentName: name,
-      module,
-      issueDate: date,
-      trainerName: trainer,
-      status: 'Active',
-      createdAt: new Date().toISOString()
-    });
+    certs.unshift({ certId: genId(module), studentName: name, module, issueDate: date, trainerName: trainer, status: 'Active', createdAt: new Date().toISOString() });
     added++;
   });
-
   if (added) {
-    save();
-    renderTable();
-    document.getElementById('csv-input').value = '';
-    toast(`✅ ${added} certificate(s) imported.`);
+    save(); renderTable(); updateStats();
+    document.getElementById('csvInput').value = '';
+    showToast(`✅ ${added} certificate(s) imported.`);
   } else {
-    toast('⚠ No valid rows found. Check the format.');
+    showToast('⚠ No valid rows found. Check the format.','warn');
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// EXPORT CSV
-// ─────────────────────────────────────────────────────────────
+// ── EXPORT CSV ────────────────────────────────────────────────
 function exportCSV() {
-  if (!certs.length) { toast('No certificates to export.'); return; }
-
-  const header = 'certId,studentName,module,issueDate,trainerName,status';
-  const rows   = certs.map(c =>
-    [c.certId, c.studentName, c.module, c.issueDate, c.trainerName, c.status]
-    .map(v => `"${String(v).replace(/"/g,'""')}"`)
-    .join(',')
-  );
-
-  const blob = new Blob([header + '\n' + rows.join('\n')], { type: 'text/csv' });
+  if (!certs.length) { showToast('No certificates to export.','warn'); return; }
+  const rows = certs.map(c => [c.certId, c.studentName, c.module, c.issueDate, c.trainerName, c.status].map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const blob = new Blob(['certId,studentName,module,issueDate,trainerName,status\n' + rows.join('\n')], { type: 'text/csv' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `SAPZCODES-Certificates-${new Date().toISOString().split('T')[0]}.csv`;
+  a.download = `SAPZCODES-Certificates-${todayStr()}.csv`;
   a.click();
-  toast('⬇ CSV downloaded!');
+  showToast('⬇ CSV downloaded!');
 }
 
-// ─────────────────────────────────────────────────────────────
-// SYNC TO GOOGLE SHEET
-// ─────────────────────────────────────────────────────────────
+// ── SYNC TO SHEET ─────────────────────────────────────────────
 async function syncToSheet() {
-  if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
-    toast('⚠ Set APPS_SCRIPT_URL in the script config first.');
-    return;
-  }
-
-  const status = document.getElementById('sync-status');
+  if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') { showToast('⚠ Set APPS_SCRIPT_URL first.','warn'); return; }
   const active = certs.filter(c => c.status === 'Active');
-  if (!active.length) { toast('No active certificates to sync.'); return; }
-
+  if (!active.length) { showToast('No active certificates to sync.','warn'); return; }
+  const status = document.getElementById('syncStatus');
   status.textContent = `Syncing ${active.length} certificates…`;
-
   let ok = 0, fail = 0;
   for (const c of active) {
     try {
-      const res = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'cert_upsert',
-          adminKey: getAdminKey(),
-          ...c
-        })
-      });
+      const res = await fetch(APPS_SCRIPT_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'cert_upsert', adminKey: getAdminKey(), ...c }) });
       const d = await res.json();
       if (d.ok) ok++; else fail++;
     } catch { fail++; }
   }
-
   status.textContent = `Done — ${ok} synced, ${fail} failed.`;
-  toast(`☁ Sync complete: ${ok} ok, ${fail} failed.`);
+  showToast(`☁ Sync complete: ${ok} ok, ${fail} failed.`, fail ? 'warn' : 'success');
 }
 </script>
 </body>
