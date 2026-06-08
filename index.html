@@ -55,6 +55,9 @@
       <span class="nav-icon">🧾</span> Reimbursements
     </a>
     <div class="nav-section">Finance</div>
+      <a class="nav-item" href="expenses">
+      <span class="nav-icon">💸</span> Expenses &amp; Income
+    </a>
     <a class="nav-item" href="reports">
       <span class="nav-icon">📊</span> Reports
     </a>
@@ -121,6 +124,13 @@
         <div class="stat-sub">Pending approval</div>
         <div class="stat-icon">🧾</div>
       </div>
+          <div class="stat-card" style="background:linear-gradient(135deg,rgba(255,77,77,.12),rgba(0,195,122,.08));border-color:rgba(255,77,77,.25)">
+        <div class="stat-label">This Month</div>
+        <div class="stat-value pulse" id="statExpBal">—</div>
+        <div class="stat-sub" id="statExpSub">Expenses vs Income</div>
+        <div class="stat-icon">💸</div>
+      </div>
+ 
     </div>
 
     <!-- Two col -->
@@ -267,6 +277,7 @@ async function initDashboard() {
   setCurrentMonth();
   if (API_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") { loadMockData(); return; }
   await Promise.all([loadEmployeeStats(), loadPayrollSummary(), loadAuditLog()]);
+  loadExpenseSummary();
 }
 function setCurrentMonth() {
   const now = new Date();
@@ -274,6 +285,38 @@ function setCurrentMonth() {
   document.getElementById("currentMonthBadge").textContent = months[now.getMonth()] + " " + now.getFullYear();
   const mi = document.getElementById("runMonth"); const yi = document.getElementById("runYear");
   if (mi) mi.value = now.getMonth() + 1; if (yi) yi.value = now.getFullYear();
+}
+
+  function loadExpenseSummary() {
+  try {
+    const now    = new Date();
+    const ym     = now.toISOString().slice(0, 7); // "YYYY-MM"
+ 
+    const expenses = JSON.parse(localStorage.getItem("szc_expenses") || "[]");
+    const incomes  = JSON.parse(localStorage.getItem("szc_incomes")  || "[]");
+ 
+    const totalExp = expenses
+      .filter(e => e.date && e.date.startsWith(ym))
+      .reduce((s, e) => s + (e.amount || 0), 0);
+ 
+    const totalInc = incomes
+      .filter(e => e.date && e.date.startsWith(ym))
+      .reduce((s, e) => s + (e.amount || 0), 0);
+ 
+    const bal = totalInc - totalExp;
+    const balEl = document.getElementById("statExpBal");
+    const subEl = document.getElementById("statExpSub");
+ 
+    if (balEl) {
+      balEl.textContent = (bal < 0 ? "−₹" : "₹") + Number(Math.abs(bal)).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+      balEl.style.color = bal < 0 ? "var(--exp-red, #ff4d4d)" : "var(--green-dk, #00c37a)";
+    }
+    if (subEl) {
+      subEl.textContent = `Exp ₹${Number(totalExp).toLocaleString("en-IN",{maximumFractionDigits:0})} · Inc ₹${Number(totalInc).toLocaleString("en-IN",{maximumFractionDigits:0})}`;
+    }
+  } catch (err) {
+    console.error("Expense summary error:", err);
+  }
 }
 
 async function loadEmployeeStats() {
