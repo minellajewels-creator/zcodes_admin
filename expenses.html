@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SAPZCODES — Expenses & Income</title>
+<link rel="icon" href="favicon.png" />
+<link rel="stylesheet" href="style.css" />
+<style>
+/* ── PAGE-SPECIFIC OVERRIDES ── */
+:root {
+  --exp-red:    #ff4d4d;
+  --exp-red-dk: #c0392b;
+  --inc-green:  #00c37a;
+  --inc-green2: #00a86b;
+  --card-bg:    var(--surface, #1a1a2e);
+  --mode-cash:  #f4c430;
+  --mode-card:  #5b8dee;
+  --mode-gpay:  #34a853;
+}
+
+/* Tabs */
+.tab-bar {
+  display: flex; gap: 4px;
+  background: var(--surface2, #111122);
+  border-radius: 10px; padding: 4px;
+  width: fit-content; margin-bottom: 20px;
+}
+.tab-btn {
+  padding: 8px 22px; border-radius: 7px;
+  border: none; cursor: pointer;
+  font-size: 13px; font-weight: 600;
+  background: transparent;
+  color: var(--muted, #888); transition: all .2s;
+}
+.tab-btn.active {
+  background: var(--primary, #5b8dee);
+  color: #fff;
+}
+.tab-btn.tab-exp.active { background: var(--exp-red); }
+.tab-btn.tab-inc.active { background: var(--inc-green); }
+
+/* Form panels */
+.form-panel {
+  display: none;
+  background: var(--surface, #1a1a2e);
+  border: 1px solid var(--border, #2a2a3e);
+  border-radius: 12px; padding: 24px;
+  margin-bottom: 20px; animation: fadeSlide .2s ease;
+}
+.form-panel.open { display: block; }
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+.form-grid .field { margin-bottom: 0; }
+.form-grid .field.full { grid-column: 1 / -1; }
+
+.field label {
+  display: block; font-size: 11px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted, #888); margin-bottom: 5px;
+}
+.field input, .field select, .field textarea {
+  width: 100%; box-sizing: border-box;
+  background: var(--bg, #0f0f1a);
+  border: 1px solid var(--border, #2a2a3e);
+  border-radius: 7px; color: var(--text, #e8e8f0);
+  padding: 9px 12px; font-size: 13px;
+  transition: border-color .15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: var(--primary, #5b8dee);
+}
+.field select option { background: var(--bg, #0f0f1a); }
+
+/* conditional card row */
+#cardRow, #otherRow, #incOtherRow { display: none; }
+
+/* Mode pills */
+.mode-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.mode-pill {
+  padding: 7px 16px; border-radius: 20px; border: 1.5px solid var(--border, #2a2a3e);
+  cursor: pointer; font-size: 12px; font-weight: 600;
+  color: var(--muted, #888); transition: all .15s; background: transparent;
+}
+.mode-pill.selected-cash  { border-color: var(--mode-cash);  color: var(--mode-cash);  background: rgba(244,196,48,.1);  }
+.mode-pill.selected-card  { border-color: var(--mode-card);  color: var(--mode-card);  background: rgba(91,141,238,.1);  }
+.mode-pill.selected-gpay  { border-color: var(--mode-gpay);  color: var(--mode-gpay);  background: rgba(52,168,83,.1);   }
+
+/* Summary bar */
+.summary-bar {
+  display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.sum-card {
+  flex: 1; min-width: 150px;
+  background: var(--surface, #1a1a2e);
+  border: 1px solid var(--border, #2a2a3e);
+  border-radius: 10px; padding: 14px 18px;
+}
+.sum-card .sum-label { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted, #888); margin-bottom: 4px; }
+.sum-card .sum-val   { font-size: 22px; font-weight: 800; }
+.sum-card.s-exp .sum-val { color: var(--exp-red); }
+.sum-card.s-inc .sum-val { color: var(--inc-green); }
+.sum-card.s-bal .sum-val { color: var(--primary, #5b8dee); }
+
+/* Filter row */
+.filter-row {
+  display: flex; gap: 10px; align-items: center;
+  flex-wrap: wrap; margin-bottom: 14px;
+}
+.filter-row input, .filter-row select {
+  background: var(--surface, #1a1a2e);
+  border: 1px solid var(--border, #2a2a3e);
+  border-radius: 7px; color: var(--text, #e8e8f0);
+  padding: 8px 12px; font-size: 12px;
+}
+.filter-row input:focus, .filter-row select:focus { outline: none; border-color: var(--primary, #5b8dee); }
+
+/* Table */
+.exp-table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border, #2a2a3e); }
+.exp-table {
+  width: 100%; border-collapse: collapse; font-size: 12.5px;
+}
+.exp-table thead tr { background: var(--surface2, #111122); }
+.exp-table th {
+  padding: 10px 14px; text-align: left;
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted, #888); font-weight: 700;
+  border-bottom: 1px solid var(--border, #2a2a3e);
+  white-space: nowrap;
+}
+.exp-table td {
+  padding: 10px 14px; border-bottom: 1px solid var(--border, #2a2a3e);
+  color: var(--text, #e8e8f0); vertical-align: middle;
+}
+.exp-table tbody tr:last-child td { border-bottom: none; }
+.exp-table tbody tr:hover td { background: rgba(255,255,255,.02); }
+
+/* Mode badge */
+.mode-badge {
+  display: inline-block; padding: 2px 9px; border-radius: 10px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+}
+.mode-cash { background: rgba(244,196,48,.15); color: var(--mode-cash); }
+.mode-card { background: rgba(91,141,238,.15); color: var(--mode-card); }
+.mode-gpay { background: rgba(52,168,83,.15);  color: var(--mode-gpay); }
+.mode-upi  { background: rgba(52,168,83,.15);  color: var(--mode-gpay); }
+
+.amount-exp { color: var(--exp-red);   font-weight: 700; }
+.amount-inc { color: var(--inc-green); font-weight: 700; }
+
+/* Delete btn */
+.del-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted, #888); font-size: 14px; padding: 2px 6px;
+  border-radius: 4px; transition: color .15s;
+}
+.del-btn:hover { color: var(--exp-red); }
+
+/* Empty */
+.empty-row td { text-align: center; padding: 32px; color: var(--muted, #888); font-style: italic; }
+
+/* Add button */
+.add-row-btn {
+  background: none; border: 1.5px dashed var(--border, #2a2a3e);
+  color: var(--muted, #888); border-radius: 8px; padding: 10px 20px;
+  cursor: pointer; font-size: 13px; font-weight: 600;
+  transition: all .15s; width: 100%; margin-top: 10px;
+}
+.add-row-btn:hover { border-color: var(--primary, #5b8dee); color: var(--primary, #5b8dee); }
+
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-head h3 { font-size: 14px; font-weight: 700; color: var(--text, #e8e8f0); margin: 0; }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN OVERLAY (same as dashboard) ── -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo-wrap">
+      <img src="logoforblack.png" alt="SAPZCODES" style="filter:none; width:180px;" />
+    </div>
+    <div class="login-sub" style="margin-top:6px;">Payroll Management System — HR Access Only</div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="hr@sapzcodes.com" />
+    </div>
+    <div class="field">
+      <label>Admin Token</label>
+      <input type="password" id="loginToken" placeholder="Enter admin token" />
+    </div>
+    <div class="login-err" id="loginErr"></div>
+    <button class="login-submit" onclick="doLogin()">Access Dashboard</button>
+    <div class="login-note">🔒 Restricted to hr@sapzcodes.com only</div>
+  </div>
+</div>
+
+<!-- ── SIDEBAR ── -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <img src="logoforblack.png" alt="SAPZCODES" />
+    <div class="logo-sub">Payroll System</div>
+  </div>
+  <nav>
+    <div class="nav-section">Main</div>
+    <a class="nav-item" href="index"><span class="nav-icon">⬛</span> Dashboard</a>
+    <a class="nav-item" href="employees"><span class="nav-icon">👤</span> Employees</a>
+    <div class="nav-section">Payroll</div>
+    <a class="nav-item" href="attendance"><span class="nav-icon">📅</span> Attendance</a>
+    <a class="nav-item" href="payroll-run"><span class="nav-icon">⚡</span> Run Payroll</a>
+    <a class="nav-item" href="reimbursements"><span class="nav-icon">🧾</span> Reimbursements</a>
+    <div class="nav-section">Finance</div>
+    <a class="nav-item active" href="expenses"><span class="nav-icon">💸</span> Expenses & Income</a>
+    <a class="nav-item" href="reports"><span class="nav-icon">📊</span> Reports</a>
+    <a class="nav-item" href="cert-admin"><span class="nav-icon">📑</span> Certification</a>
+    <a class="nav-item" href="fnf"><span class="nav-icon">🔚</span> Full &amp; Final</a>
+    <a class="nav-item" href="audit"><span class="nav-icon">🗂</span> Audit Log</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="admin-badge">
+      <div class="admin-avatar">HR</div>
+      <div class="admin-info">
+        <div class="admin-name">hr@sapzcodes.com</div>
+        <div class="admin-role">Administrator</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">↩ Logout</button>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+  <div class="topbar">
+    <div class="page-title">Expenses &amp; Income</div>
+    <div class="topbar-right">
+      <div class="month-badge" id="currentMonthBadge">— / —</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Summary bar -->
+    <div class="summary-bar">
+      <div class="sum-card s-exp">
+        <div class="sum-label">Total Expenses</div>
+        <div class="sum-val" id="sumExp">₹0</div>
+      </div>
+      <div class="sum-card s-inc">
+        <div class="sum-label">Total Income</div>
+        <div class="sum-val" id="sumInc">₹0</div>
+      </div>
+      <div class="sum-card s-bal">
+        <div class="sum-label">Net Balance</div>
+        <div class="sum-val" id="sumBal">₹0</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn tab-exp active" onclick="switchTab('exp')">💸 Expenses</button>
+      <button class="tab-btn tab-inc"        onclick="switchTab('inc')">💰 Income</button>
+    </div>
+
+    <!-- ═══ EXPENSES SECTION ═══ -->
+    <div id="expSection">
+      <div class="section-head">
+        <h3>Expense Records</h3>
+        <button class="btn btn-primary" onclick="toggleForm('expForm')">+ Add Expense</button>
+      </div>
+
+      <!-- Expense Form -->
+      <div class="form-panel" id="expForm">
+        <div class="form-grid">
+
+          <div class="field">
+            <label>Date</label>
+            <input type="date" id="expDate" />
+          </div>
+
+          <div class="field">
+            <label>Spent By</label>
+            <select id="expPerson" onchange="handlePersonChange()">
+              <option value="">— Select —</option>
+              <option>Gautham</option>
+              <option>Manoj</option>
+              <option>Sathish</option>
+              <option>Suthika</option>
+              <option>Sravanthi</option>
+              <option>Janapriya</option>
+              <option value="Other">Other (specify)</option>
+            </select>
+          </div>
+
+          <div class="field" id="otherRow">
+            <label>Specify Name</label>
+            <input type="text" id="expPersonOther" placeholder="Enter name" />
+          </div>
+
+          <div class="field">
+            <label>Amount (₹)</label>
+            <input type="number" id="expAmount" placeholder="0" min="0" step="0.01" />
+          </div>
+
+          <div class="field full">
+            <label>Reason / Description</label>
+            <input type="text" id="expReason" placeholder="What was this expense for?" />
+          </div>
+
+          <div class="field full">
+            <label>Mode of Payment</label>
+            <div class="mode-pills">
+              <button class="mode-pill" onclick="selectMode('Cash')"  id="pill-Cash">💵 Cash</button>
+              <button class="mode-pill" onclick="selectMode('Card')"  id="pill-Card">💳 Card</button>
+              <button class="mode-pill" onclick="selectMode('GPay')"  id="pill-GPay">📱 GPay</button>
+            </div>
+          </div>
+
+          <div class="field" id="cardRow">
+            <label>Which Card?</label>
+            <select id="expCard">
+              <option value="">— Select Card —</option>
+              <option value="HDFC (Gautham)">HDFC — Gautham</option>
+              <option value="ICICI (Manoj)">ICICI — Manoj</option>
+              <option value="HDFC (Manoj)">HDFC — Manoj</option>
+              <option value="SBI (Manoj)">SBI — Manoj</option>
+            </select>
+          </div>
+
+        </div>
+        <div style="margin-top:16px; display:flex; gap:10px;">
+          <button class="btn btn-primary" onclick="addExpense()">Save Expense</button>
+          <button class="btn" onclick="toggleForm('expForm')" style="background:var(--surface2,#111122)">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Expense Filter + Table -->
+      <div class="filter-row">
+        <input type="month" id="expFilterMonth" onchange="renderExpTable()" />
+        <select id="expFilterPerson" onchange="renderExpTable()">
+          <option value="">All People</option>
+          <option>Gautham</option><option>Manoj</option><option>Sathish</option>
+          <option>Suthika</option><option>Sravanthi</option><option>Janapriya</option>
+        </select>
+        <select id="expFilterMode" onchange="renderExpTable()">
+          <option value="">All Modes</option>
+          <option>Cash</option><option>Card</option><option>GPay</option>
+        </select>
+        <input type="text" id="expSearch" placeholder="Search reason..." oninput="renderExpTable()" style="min-width:160px;" />
+      </div>
+
+      <div class="exp-table-wrap">
+        <table class="exp-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Spent By</th>
+              <th>Amount</th>
+              <th>Reason</th>
+              <th>Mode</th>
+              <th>Card</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="expTableBody">
+            <tr class="empty-row"><td colspan="8">No expenses recorded yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /expSection -->
+
+    <!-- ═══ INCOME SECTION ═══ -->
+    <div id="incSection" style="display:none">
+      <div class="section-head">
+        <h3>Income Records</h3>
+        <button class="btn btn-primary" onclick="toggleForm('incForm')">+ Add Income</button>
+      </div>
+
+      <!-- Income Form -->
+      <div class="form-panel" id="incForm">
+        <div class="form-grid">
+
+          <div class="field">
+            <label>Date</label>
+            <input type="date" id="incDate" />
+          </div>
+
+          <div class="field">
+            <label>Into Bank</label>
+            <select id="incBank">
+              <option value="">— Select Bank —</option>
+              <option>HDFC (Gautham)</option>
+              <option>ICICI (Manoj)</option>
+              <option>HDFC (Manoj)</option>
+              <option>SBI (Manoj)</option>
+              <option>Cash</option>
+              <option value="Other">Other (specify)</option>
+            </select>
+          </div>
+
+          <div class="field" id="incOtherRow">
+            <label>Specify Bank</label>
+            <input type="text" id="incBankOther" placeholder="Bank / account name" />
+          </div>
+
+          <div class="field">
+            <label>Amount (₹)</label>
+            <input type="number" id="incAmount" placeholder="0" min="0" step="0.01" />
+          </div>
+
+          <div class="field">
+            <label>By Person</label>
+            <select id="incPerson">
+              <option value="">— Select —</option>
+              <option>Gautham</option>
+              <option>Manoj</option>
+              <option>Sathish</option>
+              <option>Suthika</option>
+              <option>Sravanthi</option>
+              <option>Janapriya</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="field full">
+            <label>Mode of Payment</label>
+            <div class="mode-pills">
+              <button class="mode-pill" onclick="selectIncMode('Cash')"   id="inc-pill-Cash">💵 Cash</button>
+              <button class="mode-pill" onclick="selectIncMode('Card')"   id="inc-pill-Card">💳 Card</button>
+              <button class="mode-pill" onclick="selectIncMode('GPay')"   id="inc-pill-GPay">📱 GPay</button>
+              <button class="mode-pill" onclick="selectIncMode('Bank Transfer')" id="inc-pill-Bank Transfer">🏦 Bank Transfer</button>
+            </div>
+          </div>
+
+          <div class="field full">
+            <label>Notes (optional)</label>
+            <input type="text" id="incNotes" placeholder="Source or additional info" />
+          </div>
+
+        </div>
+        <div style="margin-top:16px; display:flex; gap:10px;">
+          <button class="btn btn-primary" onclick="addIncome()">Save Income</button>
+          <button class="btn" onclick="toggleForm('incForm')" style="background:var(--surface2,#111122)">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Income Filter + Table -->
+      <div class="filter-row">
+        <input type="month" id="incFilterMonth" onchange="renderIncTable()" />
+        <select id="incFilterPerson" onchange="renderIncTable()">
+          <option value="">All People</option>
+          <option>Gautham</option><option>Manoj</option><option>Sathish</option>
+          <option>Suthika</option><option>Sravanthi</option><option>Janapriya</option>
+        </select>
+        <input type="text" id="incSearch" placeholder="Search notes..." oninput="renderIncTable()" style="min-width:160px;" />
+      </div>
+
+      <div class="exp-table-wrap">
+        <table class="exp-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Into Bank</th>
+              <th>Amount</th>
+              <th>By Person</th>
+              <th>Mode</th>
+              <th>Notes</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="incTableBody">
+            <tr class="empty-row"><td colspan="8">No income recorded yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /incSection -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────
+const API_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+let ADMIN_TOKEN = "";
+
+// ── AUTH ─────────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const token = document.getElementById("loginToken").value.trim();
+  const err   = document.getElementById("loginErr");
+  if (email !== "hr@sapzcodes.com") { err.textContent = "Access restricted."; err.classList.add("show"); return; }
+  if (!token) { err.textContent = "Admin token required."; err.classList.add("show"); return; }
+  err.textContent = "Verifying..."; err.classList.add("show");
+  try {
+    const res  = await fetch(`${API_URL}?${new URLSearchParams({ action: "getAuditLog", token })}`);
+    const data = await res.json();
+    if (data?.error === "Unauthorized") { err.textContent = "Invalid admin token."; return; }
+    ADMIN_TOKEN = token;
+    sessionStorage.setItem("szc_token", token);
+    sessionStorage.setItem("szc_email", email);
+    document.getElementById("loginOverlay").style.display = "none";
+    err.classList.remove("show");
+    initPage();
+  } catch { err.textContent = "Could not reach server."; }
+}
+function checkAuth() {
+  const token = sessionStorage.getItem("szc_token");
+  const email = sessionStorage.getItem("szc_email");
+  if (token && email === "hr@sapzcodes.com") {
+    ADMIN_TOKEN = token;
+    document.getElementById("loginOverlay").style.display = "none";
+    return true;
+  }
+  return false;
+}
+function doLogout() { sessionStorage.clear(); location.reload(); }
+
+// ── DATA (GAS or localStorage fallback) ─────────────────────
+// Keys: "szc_expenses" and "szc_incomes" stored in localStorage
+// Each record: { id, date, person, amount, reason, mode, card? }
+//              { id, date, bank, amount, person, mode, notes? }
+
+function loadData(key) {
+  try { return JSON.parse(localStorage.getItem(key) || "[]"); } catch { return []; }
+}
+function saveData(key, arr) {
+  localStorage.setItem(key, JSON.stringify(arr));
+}
+
+let expenses = [];
+let incomes  = [];
+
+function initPage() {
+  setCurrentMonth();
+  expenses = loadData("szc_expenses");
+  incomes  = loadData("szc_incomes");
+  // Pre-fill today's date
+  document.getElementById("expDate").valueAsDate = new Date();
+  document.getElementById("incDate").valueAsDate = new Date();
+  // Pre-fill current month filter
+  const ym = new Date().toISOString().slice(0,7);
+  document.getElementById("expFilterMonth").value = ym;
+  document.getElementById("incFilterMonth").value = ym;
+  renderExpTable();
+  renderIncTable();
+  updateSummary();
+}
+
+function setCurrentMonth() {
+  const now = new Date();
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  document.getElementById("currentMonthBadge").textContent = months[now.getMonth()] + " " + now.getFullYear();
+}
+
+// ── TABS ─────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById("expSection").style.display = tab === "exp" ? "" : "none";
+  document.getElementById("incSection").style.display = tab === "inc" ? "" : "none";
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.querySelector(".tab-" + tab).classList.add("active");
+}
+
+function toggleForm(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle("open");
+}
+
+// ── MODE PILLS ───────────────────────────────────────────────
+let selectedExpMode = "";
+let selectedIncMode = "";
+
+function selectMode(m) {
+  selectedExpMode = m;
+  ["Cash","Card","GPay"].forEach(x => {
+    const el = document.getElementById("pill-" + x);
+    el.className = "mode-pill" + (x === m ? " selected-" + x.toLowerCase() : "");
+  });
+  document.getElementById("cardRow").style.display = m === "Card" ? "" : "none";
+  if (m !== "Card") document.getElementById("expCard").value = "";
+}
+
+function selectIncMode(m) {
+  selectedIncMode = m;
+  ["Cash","Card","GPay","Bank Transfer"].forEach(x => {
+    const el = document.getElementById("inc-pill-" + x);
+    if (!el) return;
+    el.className = "mode-pill" + (x === m ? " selected-" + (x === "Bank Transfer" ? "gpay" : x.toLowerCase()) : "");
+  });
+}
+
+function handlePersonChange() {
+  const v = document.getElementById("expPerson").value;
+  document.getElementById("otherRow").style.display = v === "Other" ? "" : "none";
+}
+
+document.getElementById && document.getElementById("incBank") &&
+  document.getElementById("incBank").addEventListener("change", function() {
+    document.getElementById("incOtherRow").style.display = this.value === "Other" ? "" : "none";
+  });
+
+// ── ADD EXPENSE ──────────────────────────────────────────────
+function addExpense() {
+  const date   = document.getElementById("expDate").value;
+  const person = document.getElementById("expPerson").value === "Other"
+                   ? document.getElementById("expPersonOther").value.trim()
+                   : document.getElementById("expPerson").value;
+  const amount = parseFloat(document.getElementById("expAmount").value);
+  const reason = document.getElementById("expReason").value.trim();
+  const card   = document.getElementById("expCard").value;
+
+  if (!date)           return showToast("Select a date", "error");
+  if (!person)         return showToast("Select who spent", "error");
+  if (!amount || amount <= 0) return showToast("Enter a valid amount", "error");
+  if (!reason)         return showToast("Enter a reason", "error");
+  if (!selectedExpMode) return showToast("Select payment mode", "error");
+  if (selectedExpMode === "Card" && !card) return showToast("Select which card", "error");
+
+  const record = {
+    id:     "EX" + Date.now(),
+    date, person, amount, reason,
+    mode:   selectedExpMode,
+    card:   selectedExpMode === "Card" ? card : ""
+  };
+
+  expenses.push(record);
+  saveData("szc_expenses", expenses);
+  resetExpForm();
+  toggleForm("expForm");
+  renderExpTable();
+  updateSummary();
+  showToast("✅ Expense added", "success");
+}
+
+function resetExpForm() {
+  document.getElementById("expDate").valueAsDate = new Date();
+  document.getElementById("expPerson").value = "";
+  document.getElementById("expPersonOther").value = "";
+  document.getElementById("expAmount").value = "";
+  document.getElementById("expReason").value = "";
+  document.getElementById("expCard").value = "";
+  document.getElementById("otherRow").style.display = "none";
+  document.getElementById("cardRow").style.display = "none";
+  selectedExpMode = "";
+  ["Cash","Card","GPay"].forEach(x => {
+    const el = document.getElementById("pill-" + x);
+    if (el) el.className = "mode-pill";
+  });
+}
+
+// ── ADD INCOME ───────────────────────────────────────────────
+function addIncome() {
+  const date   = document.getElementById("incDate").value;
+  const bank   = document.getElementById("incBank").value === "Other"
+                   ? document.getElementById("incBankOther").value.trim()
+                   : document.getElementById("incBank").value;
+  const amount = parseFloat(document.getElementById("incAmount").value);
+  const person = document.getElementById("incPerson").value;
+  const notes  = document.getElementById("incNotes").value.trim();
+
+  if (!date)           return showToast("Select a date", "error");
+  if (!bank)           return showToast("Select bank / destination", "error");
+  if (!amount || amount <= 0) return showToast("Enter a valid amount", "error");
+  if (!person)         return showToast("Select by person", "error");
+  if (!selectedIncMode) return showToast("Select payment mode", "error");
+
+  const record = {
+    id: "IN" + Date.now(),
+    date, bank, amount, person,
+    mode: selectedIncMode,
+    notes
+  };
+
+  incomes.push(record);
+  saveData("szc_incomes", incomes);
+  resetIncForm();
+  toggleForm("incForm");
+  renderIncTable();
+  updateSummary();
+  showToast("✅ Income added", "success");
+}
+
+function resetIncForm() {
+  document.getElementById("incDate").valueAsDate = new Date();
+  document.getElementById("incBank").value = "";
+  document.getElementById("incBankOther").value = "";
+  document.getElementById("incAmount").value = "";
+  document.getElementById("incPerson").value = "";
+  document.getElementById("incNotes").value = "";
+  document.getElementById("incOtherRow").style.display = "none";
+  selectedIncMode = "";
+  ["Cash","Card","GPay","Bank Transfer"].forEach(x => {
+    const el = document.getElementById("inc-pill-" + x);
+    if (el) el.className = "mode-pill";
+  });
+}
+
+// ── DELETE ───────────────────────────────────────────────────
+function deleteExpense(id) {
+  if (!confirm("Delete this expense?")) return;
+  expenses = expenses.filter(e => e.id !== id);
+  saveData("szc_expenses", expenses);
+  renderExpTable(); updateSummary();
+  showToast("Expense deleted");
+}
+function deleteIncome(id) {
+  if (!confirm("Delete this income?")) return;
+  incomes = incomes.filter(e => e.id !== id);
+  saveData("szc_incomes", incomes);
+  renderIncTable(); updateSummary();
+  showToast("Income deleted");
+}
+
+// ── RENDER TABLES ────────────────────────────────────────────
+function renderExpTable() {
+  const filterMonth  = document.getElementById("expFilterMonth").value;
+  const filterPerson = document.getElementById("expFilterPerson").value;
+  const filterMode   = document.getElementById("expFilterMode").value;
+  const search       = document.getElementById("expSearch").value.toLowerCase();
+
+  let rows = expenses.filter(e => {
+    if (filterMonth  && !e.date.startsWith(filterMonth))           return false;
+    if (filterPerson && e.person !== filterPerson)                 return false;
+    if (filterMode   && e.mode   !== filterMode)                   return false;
+    if (search       && !e.reason.toLowerCase().includes(search))  return false;
+    return true;
+  }).sort((a,b) => b.date.localeCompare(a.date));
+
+  const tbody = document.getElementById("expTableBody");
+  if (!rows.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No expenses match the filters.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((e,i) => `
+    <tr>
+      <td style="color:var(--muted);font-size:11px">${i+1}</td>
+      <td style="white-space:nowrap">${fmtDate(e.date)}</td>
+      <td style="font-weight:600">${e.person}</td>
+      <td class="amount-exp">₹${fmt(e.amount)}</td>
+      <td style="color:var(--text2)">${e.reason}</td>
+      <td><span class="mode-badge mode-${e.mode.toLowerCase()}">${e.mode}</span></td>
+      <td style="color:var(--muted);font-size:11px">${e.card || '—'}</td>
+      <td><button class="del-btn" onclick="deleteExpense('${e.id}')">🗑</button></td>
+    </tr>`).join("");
+}
+
+function renderIncTable() {
+  const filterMonth  = document.getElementById("incFilterMonth").value;
+  const filterPerson = document.getElementById("incFilterPerson").value;
+  const search       = document.getElementById("incSearch").value.toLowerCase();
+
+  let rows = incomes.filter(e => {
+    if (filterMonth  && !e.date.startsWith(filterMonth))          return false;
+    if (filterPerson && e.person !== filterPerson)                 return false;
+    if (search       && !(e.notes||"").toLowerCase().includes(search) && !e.bank.toLowerCase().includes(search)) return false;
+    return true;
+  }).sort((a,b) => b.date.localeCompare(a.date));
+
+  const tbody = document.getElementById("incTableBody");
+  if (!rows.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No income records match the filters.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((e,i) => `
+    <tr>
+      <td style="color:var(--muted);font-size:11px">${i+1}</td>
+      <td style="white-space:nowrap">${fmtDate(e.date)}</td>
+      <td style="font-weight:600">${e.bank}</td>
+      <td class="amount-inc">₹${fmt(e.amount)}</td>
+      <td>${e.person}</td>
+      <td><span class="mode-badge mode-${e.mode.toLowerCase().replace(' ','-')}">${e.mode}</span></td>
+      <td style="color:var(--muted);font-size:12px">${e.notes || '—'}</td>
+      <td><button class="del-btn" onclick="deleteIncome('${e.id}')">🗑</button></td>
+    </tr>`).join("");
+}
+
+// ── SUMMARY ──────────────────────────────────────────────────
+function updateSummary() {
+  const totalExp = expenses.reduce((s,e) => s + e.amount, 0);
+  const totalInc = incomes.reduce((s,e)  => s + e.amount, 0);
+  const bal      = totalInc - totalExp;
+  document.getElementById("sumExp").textContent = "₹" + fmt(totalExp);
+  document.getElementById("sumInc").textContent = "₹" + fmt(totalInc);
+  const balEl = document.getElementById("sumBal");
+  balEl.textContent = (bal < 0 ? "−₹" : "₹") + fmt(Math.abs(bal));
+  balEl.style.color = bal < 0 ? "var(--exp-red)" : "var(--inc-green)";
+}
+
+// ── HELPERS ──────────────────────────────────────────────────
+function fmt(n) { return Number(n).toLocaleString("en-IN", { maximumFractionDigits: 2 }); }
+function fmtDate(d) {
+  if (!d) return "—";
+  const [y,m,day] = d.split("-");
+  return `${day}/${m}/${y}`;
+}
+function showToast(msg, type = "success") {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.className = "toast " + type + " show";
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+window.onload = () => {
+  if (checkAuth()) initPage();
+  const loginToken = document.getElementById("loginToken");
+  if (loginToken) loginToken.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+
+  // Wire up incBank change after DOM ready
+  document.getElementById("incBank").addEventListener("change", function() {
+    document.getElementById("incOtherRow").style.display = this.value === "Other" ? "" : "none";
+  });
+};
+</script>
+</body>
+</html>
