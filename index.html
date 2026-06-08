@@ -198,20 +198,45 @@
 const API_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
 let ADMIN_TOKEN = "";
 
-function doLogin() {
+async function doLogin() {
   const email = document.getElementById("loginEmail").value.trim();
   const token = document.getElementById("loginToken").value.trim();
   const err   = document.getElementById("loginErr");
+  
   if (email !== "hr@sapzcodes.com") {
     err.textContent = "Access restricted to hr@sapzcodes.com only.";
     err.classList.add("show"); return;
   }
-  if (!token) { err.textContent = "Admin token is required."; err.classList.add("show"); return; }
-  ADMIN_TOKEN = token;
-  sessionStorage.setItem("szc_token", token);
-  sessionStorage.setItem("szc_email", email);
-  document.getElementById("loginOverlay").style.display = "none";
-  initDashboard();
+  if (!token) {
+    err.textContent = "Admin token is required.";
+    err.classList.add("show"); return;
+  }
+
+  // Validate token against GAS before granting access
+  err.textContent = "Verifying...";
+  err.classList.add("show");
+
+  try {
+    const params = new URLSearchParams({ action: "getAuditLog", token });
+    const res = await fetch(`${API_URL}?${params}`);
+    const data = await res.json();
+
+    if (data?.error === "Unauthorized") {
+      err.textContent = "Invalid admin token.";
+      return;
+    }
+
+    // Token is valid
+    ADMIN_TOKEN = token;
+    sessionStorage.setItem("szc_token", token);
+    sessionStorage.setItem("szc_email", email);
+    document.getElementById("loginOverlay").style.display = "none";
+    err.classList.remove("show");
+    initDashboard();
+
+  } catch (e) {
+    err.textContent = "Could not reach server. Check API URL.";
+  }
 }
 function checkAuth() {
   const token = sessionStorage.getItem("szc_token");
