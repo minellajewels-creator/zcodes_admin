@@ -7,7 +7,6 @@
 <link rel="icon" href="favicon.png" />
 <link rel="stylesheet" href="style.css" />
 <style>
-/* ── PAGE-SPECIFIC OVERRIDES ── */
 :root {
   --exp-red:    #ff4d4d;
   --exp-red-dk: #c0392b;
@@ -19,7 +18,6 @@
   --mode-gpay:  #34a853;
 }
 
-/* Tabs */
 .tab-bar {
   display: flex; gap: 4px;
   background: var(--surface2, #111122);
@@ -33,14 +31,10 @@
   background: transparent;
   color: var(--muted, #888); transition: all .2s;
 }
-.tab-btn.active {
-  background: var(--primary, #5b8dee);
-  color: #fff;
-}
+.tab-btn.active { background: var(--primary, #5b8dee); color: #fff; }
 .tab-btn.tab-exp.active { background: var(--exp-red); }
 .tab-btn.tab-inc.active { background: var(--inc-green); }
 
-/* Form panels */
 .form-panel {
   display: none;
   background: var(--surface, #1a1a2e);
@@ -80,10 +74,9 @@
 }
 .field select option { background: var(--bg, #0f0f1a); }
 
-/* conditional card row */
-#cardRow, #otherRow, #incOtherRow { display: none; }
+/* Hidden rows */
+.hidden-row { display: none; }
 
-/* Mode pills */
 .mode-pills { display: flex; gap: 8px; flex-wrap: wrap; }
 .mode-pill {
   padding: 7px 16px; border-radius: 20px; border: 1.5px solid var(--border, #2a2a3e);
@@ -94,10 +87,7 @@
 .mode-pill.selected-card  { border-color: var(--mode-card);  color: var(--mode-card);  background: rgba(91,141,238,.1);  }
 .mode-pill.selected-gpay  { border-color: var(--mode-gpay);  color: var(--mode-gpay);  background: rgba(52,168,83,.1);   }
 
-/* Summary bar */
-.summary-bar {
-  display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;
-}
+.summary-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
 .sum-card {
   flex: 1; min-width: 150px;
   background: var(--surface, #1a1a2e);
@@ -110,7 +100,6 @@
 .sum-card.s-inc .sum-val { color: var(--inc-green); }
 .sum-card.s-bal .sum-val { color: var(--primary, #5b8dee); }
 
-/* Filter row */
 .filter-row {
   display: flex; gap: 10px; align-items: center;
   flex-wrap: wrap; margin-bottom: 14px;
@@ -123,11 +112,8 @@
 }
 .filter-row input:focus, .filter-row select:focus { outline: none; border-color: var(--primary, #5b8dee); }
 
-/* Table */
 .exp-table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border, #2a2a3e); }
-.exp-table {
-  width: 100%; border-collapse: collapse; font-size: 12.5px;
-}
+.exp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 .exp-table thead tr { background: var(--surface2, #111122); }
 .exp-table th {
   padding: 10px 14px; text-align: left;
@@ -143,7 +129,6 @@
 .exp-table tbody tr:last-child td { border-bottom: none; }
 .exp-table tbody tr:hover td { background: rgba(255,255,255,.02); }
 
-/* Mode badge */
 .mode-badge {
   display: inline-block; padding: 2px 9px; border-radius: 10px;
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
@@ -152,11 +137,11 @@
 .mode-card { background: rgba(91,141,238,.15); color: var(--mode-card); }
 .mode-gpay { background: rgba(52,168,83,.15);  color: var(--mode-gpay); }
 .mode-upi  { background: rgba(52,168,83,.15);  color: var(--mode-gpay); }
+.mode-bank-transfer { background: rgba(52,168,83,.15); color: var(--mode-gpay); }
 
 .amount-exp { color: var(--exp-red);   font-weight: 700; }
 .amount-inc { color: var(--inc-green); font-weight: 700; }
 
-/* Delete btn */
 .del-btn {
   background: none; border: none; cursor: pointer;
   color: var(--muted, #888); font-size: 14px; padding: 2px 6px;
@@ -164,28 +149,37 @@
 }
 .del-btn:hover { color: var(--exp-red); }
 
-/* Empty */
 .empty-row td { text-align: center; padding: 32px; color: var(--muted, #888); font-style: italic; }
-
-/* Add button */
-.add-row-btn {
-  background: none; border: 1.5px dashed var(--border, #2a2a3e);
-  color: var(--muted, #888); border-radius: 8px; padding: 10px 20px;
-  cursor: pointer; font-size: 13px; font-weight: 600;
-  transition: all .15s; width: 100%; margin-top: 10px;
-}
-.add-row-btn:hover { border-color: var(--primary, #5b8dee); color: var(--primary, #5b8dee); }
 
 .section-head {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 12px;
 }
 .section-head h3 { font-size: 14px; font-weight: 700; color: var(--text, #e8e8f0); margin: 0; }
+
+/* Loading spinner overlay */
+.loading-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999; display: none;
+}
+.loading-overlay.show { display: flex; }
+.spinner {
+  width: 40px; height: 40px; border: 3px solid var(--border, #2a2a3e);
+  border-top-color: var(--primary, #5b8dee); border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-<!-- ── LOGIN OVERLAY (same as dashboard) ── -->
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<!-- LOGIN OVERLAY -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-box">
     <div class="login-logo-wrap">
@@ -206,7 +200,7 @@
   </div>
 </div>
 
-<!-- ── SIDEBAR ── -->
+<!-- SIDEBAR -->
 <div class="sidebar">
   <div class="sidebar-logo">
     <img src="logoforblack.png" alt="SAPZCODES" />
@@ -239,7 +233,7 @@
   </div>
 </div>
 
-<!-- ── MAIN ── -->
+<!-- MAIN -->
 <div class="main">
   <div class="topbar">
     <div class="page-title">Expenses &amp; Income</div>
@@ -290,7 +284,7 @@
 
           <div class="field">
             <label>Spent By</label>
-            <select id="expPerson" onchange="handlePersonChange()">
+            <select id="expPerson" onchange="handleExpPersonChange()">
               <option value="">— Select —</option>
               <option>Gautham</option>
               <option>Manoj</option>
@@ -302,7 +296,7 @@
             </select>
           </div>
 
-          <div class="field" id="otherRow">
+          <div class="field hidden-row" id="expOtherRow">
             <label>Specify Name</label>
             <input type="text" id="expPersonOther" placeholder="Enter name" />
           </div>
@@ -320,13 +314,13 @@
           <div class="field full">
             <label>Mode of Payment</label>
             <div class="mode-pills">
-              <button class="mode-pill" onclick="selectMode('Cash')"  id="pill-Cash">💵 Cash</button>
-              <button class="mode-pill" onclick="selectMode('Card')"  id="pill-Card">💳 Card</button>
-              <button class="mode-pill" onclick="selectMode('GPay')"  id="pill-GPay">📱 GPay</button>
+              <button class="mode-pill" onclick="selectExpMode('Cash')" id="pill-Cash">💵 Cash</button>
+              <button class="mode-pill" onclick="selectExpMode('Card')" id="pill-Card">💳 Card</button>
+              <button class="mode-pill" onclick="selectExpMode('GPay')" id="pill-GPay">📱 GPay</button>
             </div>
           </div>
 
-          <div class="field" id="cardRow">
+          <div class="field hidden-row" id="expCardRow">
             <label>Which Card?</label>
             <select id="expCard">
               <option value="">— Select Card —</option>
@@ -334,7 +328,13 @@
               <option value="ICICI (Manoj)">ICICI — Manoj</option>
               <option value="HDFC (Manoj)">HDFC — Manoj</option>
               <option value="SBI (Manoj)">SBI — Manoj</option>
+              <option value="Other">Other (specify)</option>
             </select>
+          </div>
+
+          <div class="field hidden-row" id="expCardOtherRow">
+            <label>Specify Card</label>
+            <input type="text" id="expCardOther" placeholder="Bank / card name" />
           </div>
 
         </div>
@@ -344,7 +344,7 @@
         </div>
       </div>
 
-      <!-- Expense Filter + Table -->
+      <!-- Expense Filters -->
       <div class="filter-row">
         <input type="month" id="expFilterMonth" onchange="renderExpTable()" />
         <select id="expFilterPerson" onchange="renderExpTable()">
@@ -363,22 +363,16 @@
         <table class="exp-table">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Date</th>
-              <th>Spent By</th>
-              <th>Amount</th>
-              <th>Reason</th>
-              <th>Mode</th>
-              <th>Card</th>
-              <th></th>
+              <th>#</th><th>Date</th><th>Spent By</th><th>Amount</th>
+              <th>Reason</th><th>Mode</th><th>Card</th><th></th>
             </tr>
           </thead>
           <tbody id="expTableBody">
-            <tr class="empty-row"><td colspan="8">No expenses recorded yet.</td></tr>
+            <tr class="empty-row"><td colspan="8">Loading...</td></tr>
           </tbody>
         </table>
       </div>
-    </div><!-- /expSection -->
+    </div>
 
     <!-- ═══ INCOME SECTION ═══ -->
     <div id="incSection" style="display:none">
@@ -398,18 +392,18 @@
 
           <div class="field">
             <label>Into Bank</label>
-            <select id="incBank">
+            <select id="incBank" onchange="handleIncBankChange()">
               <option value="">— Select Bank —</option>
-              <option>HDFC (Gautham)</option>
-              <option>ICICI (Manoj)</option>
-              <option>HDFC (Manoj)</option>
-              <option>SBI (Manoj)</option>
-              <option>Cash</option>
+              <option value="HDFC (Gautham)">HDFC — Gautham</option>
+              <option value="ICICI (Manoj)">ICICI — Manoj</option>
+              <option value="HDFC (Manoj)">HDFC — Manoj</option>
+              <option value="SBI (Manoj)">SBI — Manoj</option>
+              <option value="Cash">Cash</option>
               <option value="Other">Other (specify)</option>
             </select>
           </div>
 
-          <div class="field" id="incOtherRow">
+          <div class="field hidden-row" id="incBankOtherRow">
             <label>Specify Bank</label>
             <input type="text" id="incBankOther" placeholder="Bank / account name" />
           </div>
@@ -421,7 +415,7 @@
 
           <div class="field">
             <label>By Person</label>
-            <select id="incPerson">
+            <select id="incPerson" onchange="handleIncPersonChange()">
               <option value="">— Select —</option>
               <option>Gautham</option>
               <option>Manoj</option>
@@ -429,18 +423,40 @@
               <option>Suthika</option>
               <option>Sravanthi</option>
               <option>Janapriya</option>
-              <option value="Other">Other</option>
+              <option value="Other">Other (specify)</option>
             </select>
+          </div>
+
+          <div class="field hidden-row" id="incPersonOtherRow">
+            <label>Specify Person</label>
+            <input type="text" id="incPersonOther" placeholder="Enter name" />
           </div>
 
           <div class="field full">
             <label>Mode of Payment</label>
             <div class="mode-pills">
-              <button class="mode-pill" onclick="selectIncMode('Cash')"   id="inc-pill-Cash">💵 Cash</button>
-              <button class="mode-pill" onclick="selectIncMode('Card')"   id="inc-pill-Card">💳 Card</button>
-              <button class="mode-pill" onclick="selectIncMode('GPay')"   id="inc-pill-GPay">📱 GPay</button>
+              <button class="mode-pill" onclick="selectIncMode('Cash')"          id="inc-pill-Cash">💵 Cash</button>
+              <button class="mode-pill" onclick="selectIncMode('Card')"          id="inc-pill-Card">💳 Card</button>
+              <button class="mode-pill" onclick="selectIncMode('GPay')"          id="inc-pill-GPay">📱 GPay</button>
               <button class="mode-pill" onclick="selectIncMode('Bank Transfer')" id="inc-pill-Bank Transfer">🏦 Bank Transfer</button>
             </div>
+          </div>
+
+          <div class="field hidden-row" id="incCardRow">
+            <label>Which Card?</label>
+            <select id="incCard" onchange="handleIncCardChange()">
+              <option value="">— Select Card —</option>
+              <option value="HDFC (Gautham)">HDFC — Gautham</option>
+              <option value="ICICI (Manoj)">ICICI — Manoj</option>
+              <option value="HDFC (Manoj)">HDFC — Manoj</option>
+              <option value="SBI (Manoj)">SBI — Manoj</option>
+              <option value="Other">Other (specify)</option>
+            </select>
+          </div>
+
+          <div class="field hidden-row" id="incCardOtherRow">
+            <label>Specify Card</label>
+            <input type="text" id="incCardOther" placeholder="Bank / card name" />
           </div>
 
           <div class="field full">
@@ -455,7 +471,7 @@
         </div>
       </div>
 
-      <!-- Income Filter + Table -->
+      <!-- Income Filters -->
       <div class="filter-row">
         <input type="month" id="incFilterMonth" onchange="renderIncTable()" />
         <select id="incFilterPerson" onchange="renderIncTable()">
@@ -470,25 +486,19 @@
         <table class="exp-table">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Date</th>
-              <th>Into Bank</th>
-              <th>Amount</th>
-              <th>By Person</th>
-              <th>Mode</th>
-              <th>Notes</th>
-              <th></th>
+              <th>#</th><th>Date</th><th>Into Bank</th><th>Amount</th>
+              <th>By Person</th><th>Mode</th><th>Card</th><th>Notes</th><th></th>
             </tr>
           </thead>
           <tbody id="incTableBody">
-            <tr class="empty-row"><td colspan="8">No income recorded yet.</td></tr>
+            <tr class="empty-row"><td colspan="9">Loading...</td></tr>
           </tbody>
         </table>
       </div>
-    </div><!-- /incSection -->
+    </div>
 
-  </div><!-- /content -->
-</div><!-- /main -->
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -529,32 +539,60 @@ function checkAuth() {
 }
 function doLogout() { sessionStorage.clear(); location.reload(); }
 
-// ── DATA (GAS or localStorage fallback) ─────────────────────
-// Keys: "szc_expenses" and "szc_incomes" stored in localStorage
-// Each record: { id, date, person, amount, reason, mode, card? }
-//              { id, date, bank, amount, person, mode, notes? }
-
-function loadData(key) {
-  try { return JSON.parse(localStorage.getItem(key) || "[]"); } catch { return []; }
-}
-function saveData(key, arr) {
-  localStorage.setItem(key, JSON.stringify(arr));
-}
-
+// ── DATA (Google Sheets via GAS) ─────────────────────────────
 let expenses = [];
 let incomes  = [];
 
-function initPage() {
+async function gasGet(action) {
+  const res  = await fetch(`${API_URL}?${new URLSearchParams({ action, token: ADMIN_TOKEN })}`);
+  const data = await res.json();
+  if (data?.error === "Unauthorized") throw new Error("Unauthorized");
+  return data;
+}
+
+async function gasPost(payload) {
+  const res  = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...payload, token: ADMIN_TOKEN })
+  });
+  const data = await res.json();
+  if (data?.error === "Unauthorized") throw new Error("Unauthorized");
+  return data;
+}
+
+async function loadExpenses() {
+  try {
+    const data = await gasGet("getExpenses");
+    expenses = Array.isArray(data) ? data : (data.expenses || []);
+  } catch(e) {
+    showToast("Failed to load expenses: " + e.message, "error");
+    expenses = [];
+  }
+}
+
+async function loadIncomes() {
+  try {
+    const data = await gasGet("getIncomes");
+    incomes = Array.isArray(data) ? data : (data.incomes || []);
+  } catch(e) {
+    showToast("Failed to load incomes: " + e.message, "error");
+    incomes = [];
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+async function initPage() {
   setCurrentMonth();
-  expenses = loadData("szc_expenses");
-  incomes  = loadData("szc_incomes");
-  // Pre-fill today's date
   document.getElementById("expDate").valueAsDate = new Date();
   document.getElementById("incDate").valueAsDate = new Date();
-  // Pre-fill current month filter
   const ym = new Date().toISOString().slice(0,7);
   document.getElementById("expFilterMonth").value = ym;
   document.getElementById("incFilterMonth").value = ym;
+
+  showLoading(true);
+  await Promise.all([loadExpenses(), loadIncomes()]);
+  showLoading(false);
   renderExpTable();
   renderIncTable();
   updateSummary();
@@ -566,6 +604,10 @@ function setCurrentMonth() {
   document.getElementById("currentMonthBadge").textContent = months[now.getMonth()] + " " + now.getFullYear();
 }
 
+function showLoading(v) {
+  document.getElementById("loadingOverlay").classList.toggle("show", v);
+}
+
 // ── TABS ─────────────────────────────────────────────────────
 function switchTab(tab) {
   document.getElementById("expSection").style.display = tab === "exp" ? "" : "none";
@@ -575,22 +617,26 @@ function switchTab(tab) {
 }
 
 function toggleForm(id) {
-  const el = document.getElementById(id);
-  el.classList.toggle("open");
+  document.getElementById(id).classList.toggle("open");
 }
 
 // ── MODE PILLS ───────────────────────────────────────────────
 let selectedExpMode = "";
 let selectedIncMode = "";
 
-function selectMode(m) {
+function selectExpMode(m) {
   selectedExpMode = m;
   ["Cash","Card","GPay"].forEach(x => {
-    const el = document.getElementById("pill-" + x);
-    el.className = "mode-pill" + (x === m ? " selected-" + x.toLowerCase() : "");
+    document.getElementById("pill-" + x).className =
+      "mode-pill" + (x === m ? " selected-" + x.toLowerCase() : "");
   });
-  document.getElementById("cardRow").style.display = m === "Card" ? "" : "none";
-  if (m !== "Card") document.getElementById("expCard").value = "";
+  const isCard = m === "Card";
+  document.getElementById("expCardRow").style.display = isCard ? "" : "none";
+  if (!isCard) {
+    document.getElementById("expCard").value = "";
+    document.getElementById("expCardOtherRow").style.display = "none";
+    document.getElementById("expCardOther").value = "";
+  }
 }
 
 function selectIncMode(m) {
@@ -598,51 +644,90 @@ function selectIncMode(m) {
   ["Cash","Card","GPay","Bank Transfer"].forEach(x => {
     const el = document.getElementById("inc-pill-" + x);
     if (!el) return;
-    el.className = "mode-pill" + (x === m ? " selected-" + (x === "Bank Transfer" ? "gpay" : x.toLowerCase()) : "");
+    const cls = x === "Bank Transfer" ? "selected-gpay" : "selected-" + x.toLowerCase();
+    el.className = "mode-pill" + (x === m ? " " + cls : "");
   });
+  const isCard = m === "Card";
+  document.getElementById("incCardRow").style.display = isCard ? "" : "none";
+  if (!isCard) {
+    document.getElementById("incCard").value = "";
+    document.getElementById("incCardOtherRow").style.display = "none";
+    document.getElementById("incCardOther").value = "";
+  }
 }
 
-function handlePersonChange() {
+// ── CONDITIONAL ROWS ─────────────────────────────────────────
+function handleExpPersonChange() {
   const v = document.getElementById("expPerson").value;
-  document.getElementById("otherRow").style.display = v === "Other" ? "" : "none";
+  document.getElementById("expOtherRow").style.display = v === "Other" ? "" : "none";
+  if (v !== "Other") document.getElementById("expPersonOther").value = "";
 }
 
-document.getElementById && document.getElementById("incBank") &&
-  document.getElementById("incBank").addEventListener("change", function() {
-    document.getElementById("incOtherRow").style.display = this.value === "Other" ? "" : "none";
-  });
+function handleExpCardChange() {
+  const v = document.getElementById("expCard").value;
+  document.getElementById("expCardOtherRow").style.display = v === "Other" ? "" : "none";
+  if (v !== "Other") document.getElementById("expCardOther").value = "";
+}
+
+function handleIncBankChange() {
+  const v = document.getElementById("incBank").value;
+  document.getElementById("incBankOtherRow").style.display = v === "Other" ? "" : "none";
+  if (v !== "Other") document.getElementById("incBankOther").value = "";
+}
+
+function handleIncPersonChange() {
+  const v = document.getElementById("incPerson").value;
+  document.getElementById("incPersonOtherRow").style.display = v === "Other" ? "" : "none";
+  if (v !== "Other") document.getElementById("incPersonOther").value = "";
+}
+
+function handleIncCardChange() {
+  const v = document.getElementById("incCard").value;
+  document.getElementById("incCardOtherRow").style.display = v === "Other" ? "" : "none";
+  if (v !== "Other") document.getElementById("incCardOther").value = "";
+}
 
 // ── ADD EXPENSE ──────────────────────────────────────────────
-function addExpense() {
+async function addExpense() {
   const date   = document.getElementById("expDate").value;
-  const person = document.getElementById("expPerson").value === "Other"
-                   ? document.getElementById("expPersonOther").value.trim()
-                   : document.getElementById("expPerson").value;
+  const rawPerson = document.getElementById("expPerson").value;
+  const person = rawPerson === "Other"
+    ? document.getElementById("expPersonOther").value.trim()
+    : rawPerson;
   const amount = parseFloat(document.getElementById("expAmount").value);
   const reason = document.getElementById("expReason").value.trim();
-  const card   = document.getElementById("expCard").value;
+  const rawCard = document.getElementById("expCard").value;
+  const card   = selectedExpMode === "Card"
+    ? (rawCard === "Other" ? document.getElementById("expCardOther").value.trim() : rawCard)
+    : "";
 
-  if (!date)           return showToast("Select a date", "error");
-  if (!person)         return showToast("Select who spent", "error");
-  if (!amount || amount <= 0) return showToast("Enter a valid amount", "error");
-  if (!reason)         return showToast("Enter a reason", "error");
-  if (!selectedExpMode) return showToast("Select payment mode", "error");
-  if (selectedExpMode === "Card" && !card) return showToast("Select which card", "error");
+  if (!date)                                return showToast("Select a date", "error");
+  if (!person)                              return showToast("Enter who spent", "error");
+  if (!amount || amount <= 0)               return showToast("Enter a valid amount", "error");
+  if (!reason)                              return showToast("Enter a reason", "error");
+  if (!selectedExpMode)                     return showToast("Select payment mode", "error");
+  if (selectedExpMode === "Card" && !card)  return showToast("Select / enter which card", "error");
 
   const record = {
-    id:     "EX" + Date.now(),
+    id: "EX" + Date.now(),
     date, person, amount, reason,
-    mode:   selectedExpMode,
-    card:   selectedExpMode === "Card" ? card : ""
+    mode: selectedExpMode, card
   };
 
-  expenses.push(record);
-  saveData("szc_expenses", expenses);
-  resetExpForm();
-  toggleForm("expForm");
-  renderExpTable();
-  updateSummary();
-  showToast("✅ Expense added", "success");
+  showLoading(true);
+  try {
+    await gasPost({ action: "saveExpense", record });
+    expenses.push(record);
+    resetExpForm();
+    toggleForm("expForm");
+    renderExpTable();
+    updateSummary();
+    showToast("✅ Expense saved to Google Sheets", "success");
+  } catch(e) {
+    showToast("Save failed: " + e.message, "error");
+  } finally {
+    showLoading(false);
+  }
 }
 
 function resetExpForm() {
@@ -652,8 +737,10 @@ function resetExpForm() {
   document.getElementById("expAmount").value = "";
   document.getElementById("expReason").value = "";
   document.getElementById("expCard").value = "";
-  document.getElementById("otherRow").style.display = "none";
-  document.getElementById("cardRow").style.display = "none";
+  document.getElementById("expCardOther").value = "";
+  ["expOtherRow","expCardRow","expCardOtherRow"].forEach(id =>
+    document.getElementById(id).style.display = "none"
+  );
   selectedExpMode = "";
   ["Cash","Card","GPay"].forEach(x => {
     const el = document.getElementById("pill-" + x);
@@ -662,35 +749,50 @@ function resetExpForm() {
 }
 
 // ── ADD INCOME ───────────────────────────────────────────────
-function addIncome() {
+async function addIncome() {
   const date   = document.getElementById("incDate").value;
-  const bank   = document.getElementById("incBank").value === "Other"
-                   ? document.getElementById("incBankOther").value.trim()
-                   : document.getElementById("incBank").value;
+  const rawBank = document.getElementById("incBank").value;
+  const bank   = rawBank === "Other"
+    ? document.getElementById("incBankOther").value.trim()
+    : rawBank;
   const amount = parseFloat(document.getElementById("incAmount").value);
-  const person = document.getElementById("incPerson").value;
+  const rawPerson = document.getElementById("incPerson").value;
+  const person = rawPerson === "Other"
+    ? document.getElementById("incPersonOther").value.trim()
+    : rawPerson;
   const notes  = document.getElementById("incNotes").value.trim();
+  const rawCard = document.getElementById("incCard").value;
+  const card   = selectedIncMode === "Card"
+    ? (rawCard === "Other" ? document.getElementById("incCardOther").value.trim() : rawCard)
+    : "";
 
-  if (!date)           return showToast("Select a date", "error");
-  if (!bank)           return showToast("Select bank / destination", "error");
-  if (!amount || amount <= 0) return showToast("Enter a valid amount", "error");
-  if (!person)         return showToast("Select by person", "error");
-  if (!selectedIncMode) return showToast("Select payment mode", "error");
+  if (!date)                                return showToast("Select a date", "error");
+  if (!bank)                                return showToast("Select / enter bank", "error");
+  if (!amount || amount <= 0)               return showToast("Enter a valid amount", "error");
+  if (!person)                              return showToast("Enter by person", "error");
+  if (!selectedIncMode)                     return showToast("Select payment mode", "error");
+  if (selectedIncMode === "Card" && !card)  return showToast("Select / enter which card", "error");
 
   const record = {
     id: "IN" + Date.now(),
     date, bank, amount, person,
-    mode: selectedIncMode,
-    notes
+    mode: selectedIncMode, card, notes
   };
 
-  incomes.push(record);
-  saveData("szc_incomes", incomes);
-  resetIncForm();
-  toggleForm("incForm");
-  renderIncTable();
-  updateSummary();
-  showToast("✅ Income added", "success");
+  showLoading(true);
+  try {
+    await gasPost({ action: "saveIncome", record });
+    incomes.push(record);
+    resetIncForm();
+    toggleForm("incForm");
+    renderIncTable();
+    updateSummary();
+    showToast("✅ Income saved to Google Sheets", "success");
+  } catch(e) {
+    showToast("Save failed: " + e.message, "error");
+  } finally {
+    showLoading(false);
+  }
 }
 
 function resetIncForm() {
@@ -699,8 +801,13 @@ function resetIncForm() {
   document.getElementById("incBankOther").value = "";
   document.getElementById("incAmount").value = "";
   document.getElementById("incPerson").value = "";
+  document.getElementById("incPersonOther").value = "";
   document.getElementById("incNotes").value = "";
-  document.getElementById("incOtherRow").style.display = "none";
+  document.getElementById("incCard").value = "";
+  document.getElementById("incCardOther").value = "";
+  ["incBankOtherRow","incPersonOtherRow","incCardRow","incCardOtherRow"].forEach(id =>
+    document.getElementById(id).style.display = "none"
+  );
   selectedIncMode = "";
   ["Cash","Card","GPay","Bank Transfer"].forEach(x => {
     const el = document.getElementById("inc-pill-" + x);
@@ -709,19 +816,34 @@ function resetIncForm() {
 }
 
 // ── DELETE ───────────────────────────────────────────────────
-function deleteExpense(id) {
+async function deleteExpense(id) {
   if (!confirm("Delete this expense?")) return;
-  expenses = expenses.filter(e => e.id !== id);
-  saveData("szc_expenses", expenses);
-  renderExpTable(); updateSummary();
-  showToast("Expense deleted");
+  showLoading(true);
+  try {
+    await gasPost({ action: "deleteExpense", id });
+    expenses = expenses.filter(e => e.id !== id);
+    renderExpTable(); updateSummary();
+    showToast("Expense deleted");
+  } catch(e) {
+    showToast("Delete failed: " + e.message, "error");
+  } finally {
+    showLoading(false);
+  }
 }
-function deleteIncome(id) {
+
+async function deleteIncome(id) {
   if (!confirm("Delete this income?")) return;
-  incomes = incomes.filter(e => e.id !== id);
-  saveData("szc_incomes", incomes);
-  renderIncTable(); updateSummary();
-  showToast("Income deleted");
+  showLoading(true);
+  try {
+    await gasPost({ action: "deleteIncome", id });
+    incomes = incomes.filter(e => e.id !== id);
+    renderIncTable(); updateSummary();
+    showToast("Income deleted");
+  } catch(e) {
+    showToast("Delete failed: " + e.message, "error");
+  } finally {
+    showLoading(false);
+  }
 }
 
 // ── RENDER TABLES ────────────────────────────────────────────
@@ -732,10 +854,10 @@ function renderExpTable() {
   const search       = document.getElementById("expSearch").value.toLowerCase();
 
   let rows = expenses.filter(e => {
-    if (filterMonth  && !e.date.startsWith(filterMonth))           return false;
-    if (filterPerson && e.person !== filterPerson)                 return false;
-    if (filterMode   && e.mode   !== filterMode)                   return false;
-    if (search       && !e.reason.toLowerCase().includes(search))  return false;
+    if (filterMonth  && !e.date.startsWith(filterMonth))          return false;
+    if (filterPerson && e.person !== filterPerson)                return false;
+    if (filterMode   && e.mode   !== filterMode)                  return false;
+    if (search       && !e.reason.toLowerCase().includes(search)) return false;
     return true;
   }).sort((a,b) => b.date.localeCompare(a.date));
 
@@ -763,15 +885,17 @@ function renderIncTable() {
   const search       = document.getElementById("incSearch").value.toLowerCase();
 
   let rows = incomes.filter(e => {
-    if (filterMonth  && !e.date.startsWith(filterMonth))          return false;
-    if (filterPerson && e.person !== filterPerson)                 return false;
-    if (search       && !(e.notes||"").toLowerCase().includes(search) && !e.bank.toLowerCase().includes(search)) return false;
+    if (filterMonth  && !e.date.startsWith(filterMonth))  return false;
+    if (filterPerson && e.person !== filterPerson)         return false;
+    if (search &&
+        !(e.notes||"").toLowerCase().includes(search) &&
+        !e.bank.toLowerCase().includes(search))            return false;
     return true;
   }).sort((a,b) => b.date.localeCompare(a.date));
 
   const tbody = document.getElementById("incTableBody");
   if (!rows.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No income records match the filters.</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">No income records match the filters.</td></tr>';
     return;
   }
   tbody.innerHTML = rows.map((e,i) => `
@@ -781,7 +905,8 @@ function renderIncTable() {
       <td style="font-weight:600">${e.bank}</td>
       <td class="amount-inc">₹${fmt(e.amount)}</td>
       <td>${e.person}</td>
-      <td><span class="mode-badge mode-${e.mode.toLowerCase().replace(' ','-')}">${e.mode}</span></td>
+      <td><span class="mode-badge mode-${e.mode.toLowerCase().replace(/ /g,'-')}">${e.mode}</span></td>
+      <td style="color:var(--muted);font-size:11px">${e.card || '—'}</td>
       <td style="color:var(--muted);font-size:12px">${e.notes || '—'}</td>
       <td><button class="del-btn" onclick="deleteIncome('${e.id}')">🗑</button></td>
     </tr>`).join("");
@@ -789,8 +914,8 @@ function renderIncTable() {
 
 // ── SUMMARY ──────────────────────────────────────────────────
 function updateSummary() {
-  const totalExp = expenses.reduce((s,e) => s + e.amount, 0);
-  const totalInc = incomes.reduce((s,e)  => s + e.amount, 0);
+  const totalExp = expenses.reduce((s,e) => s + Number(e.amount), 0);
+  const totalInc = incomes.reduce((s,e)  => s + Number(e.amount), 0);
   const bal      = totalInc - totalExp;
   document.getElementById("sumExp").textContent = "₹" + fmt(totalExp);
   document.getElementById("sumInc").textContent = "₹" + fmt(totalInc);
@@ -812,16 +937,15 @@ function showToast(msg, type = "success") {
   setTimeout(() => t.classList.remove("show"), 3000);
 }
 
-// ── INIT ─────────────────────────────────────────────────────
+// ── BOOT ─────────────────────────────────────────────────────
 window.onload = () => {
   if (checkAuth()) initPage();
-  const loginToken = document.getElementById("loginToken");
-  if (loginToken) loginToken.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
-
-  // Wire up incBank change after DOM ready
-  document.getElementById("incBank").addEventListener("change", function() {
-    document.getElementById("incOtherRow").style.display = this.value === "Other" ? "" : "none";
+  document.getElementById("loginToken").addEventListener("keydown", e => {
+    if (e.key === "Enter") doLogin();
   });
+  // Wire card onChange for expCard
+  document.getElementById("expCard").addEventListener("change", handleExpCardChange);
+  document.getElementById("incCard").addEventListener("change", handleIncCardChange);
 };
 </script>
 </body>
