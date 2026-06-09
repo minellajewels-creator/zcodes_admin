@@ -163,10 +163,7 @@
 </head>
 <body>
 
-<!-- Loading overlay -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-</div>
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
 
 <!-- LOGIN OVERLAY -->
 <div class="login-overlay" id="loginOverlay">
@@ -233,7 +230,6 @@
 
   <div class="content">
 
-    <!-- Summary bar -->
     <div class="summary-bar">
       <div class="sum-card s-exp">
         <div class="sum-label">Total Expenses</div>
@@ -249,7 +245,6 @@
       </div>
     </div>
 
-    <!-- Tabs -->
     <div class="tab-bar">
       <button class="tab-btn tab-exp active" onclick="switchTab('exp')">💸 Expenses</button>
       <button class="tab-btn tab-inc"        onclick="switchTab('inc')">💰 Income</button>
@@ -264,12 +259,10 @@
 
       <div class="form-panel" id="expForm">
         <div class="form-grid">
-
           <div class="field">
             <label>Date</label>
             <input type="date" id="expDate" />
           </div>
-
           <div class="field">
             <label>Spent By</label>
             <select id="expPerson" onchange="handleExpPersonChange()">
@@ -283,22 +276,18 @@
               <option value="Other">Other (specify)</option>
             </select>
           </div>
-
           <div class="field hidden-row" id="expOtherRow">
             <label>Specify Name</label>
             <input type="text" id="expPersonOther" placeholder="Enter name" />
           </div>
-
           <div class="field">
             <label>Amount (₹)</label>
             <input type="number" id="expAmount" placeholder="0" min="0" step="0.01" />
           </div>
-
           <div class="field full">
             <label>Reason / Description</label>
             <input type="text" id="expReason" placeholder="What was this expense for?" />
           </div>
-
           <div class="field">
             <label>Mode of Payment</label>
             <select id="expMode">
@@ -308,7 +297,6 @@
               <option>GPay</option>
             </select>
           </div>
-
           <div class="field">
             <label>Card Used</label>
             <select id="expCard">
@@ -319,7 +307,6 @@
               <option value="SBI (Manoj)">SBI — Manoj</option>
             </select>
           </div>
-
         </div>
         <div style="margin-top:16px; display:flex; gap:10px;">
           <button class="btn btn-primary" onclick="addExpense()">Save Expense</button>
@@ -327,7 +314,6 @@
         </div>
       </div>
 
-      <!-- Expense Filters -->
       <div class="filter-row">
         <input type="month" id="expFilterMonth" onchange="renderExpTable()" />
         <select id="expFilterPerson" onchange="renderExpTable()">
@@ -366,12 +352,10 @@
 
       <div class="form-panel" id="incForm">
         <div class="form-grid">
-
           <div class="field">
             <label>Date</label>
             <input type="date" id="incDate" />
           </div>
-
           <div class="field">
             <label>Into Bank</label>
             <select id="incBank" onchange="handleIncBankChange()">
@@ -384,17 +368,14 @@
               <option value="Other">Other (specify)</option>
             </select>
           </div>
-
           <div class="field hidden-row" id="incBankOtherRow">
             <label>Specify Bank</label>
             <input type="text" id="incBankOther" placeholder="Bank / account name" />
           </div>
-
           <div class="field">
             <label>Amount (₹)</label>
             <input type="number" id="incAmount" placeholder="0" min="0" step="0.01" />
           </div>
-
           <div class="field">
             <label>By Person</label>
             <select id="incPerson" onchange="handleIncPersonChange()">
@@ -408,12 +389,10 @@
               <option value="Other">Other (specify)</option>
             </select>
           </div>
-
           <div class="field hidden-row" id="incPersonOtherRow">
             <label>Specify Person</label>
             <input type="text" id="incPersonOther" placeholder="Enter name" />
           </div>
-
           <div class="field">
             <label>Mode of Payment</label>
             <select id="incMode">
@@ -424,7 +403,6 @@
               <option>Bank Transfer</option>
             </select>
           </div>
-
           <div class="field">
             <label>Card Used</label>
             <select id="incCard">
@@ -435,12 +413,10 @@
               <option value="SBI (Manoj)">SBI — Manoj</option>
             </select>
           </div>
-
           <div class="field full">
             <label>Notes (optional)</label>
             <input type="text" id="incNotes" placeholder="Source or additional info" />
           </div>
-
         </div>
         <div style="margin-top:16px; display:flex; gap:10px;">
           <button class="btn btn-primary" onclick="addIncome()">Save Income</button>
@@ -448,7 +424,6 @@
         </div>
       </div>
 
-      <!-- Income Filters -->
       <div class="filter-row">
         <input type="month" id="incFilterMonth" onchange="renderIncTable()" />
         <select id="incFilterPerson" onchange="renderIncTable()">
@@ -494,8 +469,7 @@ async function doLogin() {
   if (!token) { err.textContent = "Admin token required."; err.classList.add("show"); return; }
   err.textContent = "Verifying..."; err.classList.add("show");
   try {
-    const res  = await fetch(`${API_URL}?${new URLSearchParams({ action: "getAuditLog", token })}`);
-    const data = await res.json();
+    const data = await gasGet("getAuditLog");
     if (data?.error === "Unauthorized") { err.textContent = "Invalid admin token."; return; }
     ADMIN_TOKEN = token;
     sessionStorage.setItem("szc_token", token);
@@ -519,20 +493,10 @@ function checkAuth() {
 
 function doLogout() { sessionStorage.clear(); location.reload(); }
 
-// ── API HELPERS ───────────────────────────────────────────────
-async function gasGet(action) {
-  const res  = await fetch(`${API_URL}?${new URLSearchParams({ action, token: ADMIN_TOKEN })}`);
-  const data = await res.json();
-  if (data?.error === "Unauthorized") throw new Error("Unauthorized");
-  return data;
-}
-
-async function gasPost(payload) {
-  const res  = await fetch(API_URL, {
-    method:  "POST",
-    headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({ ...payload, token: ADMIN_TOKEN })
-  });
+// ── SINGLE API HELPER — all calls are GET to avoid CORS/redirect issues ──
+async function gasGet(action, params = {}) {
+  const url  = `${API_URL}?${new URLSearchParams({ action, token: ADMIN_TOKEN, ...params })}`;
+  const res  = await fetch(url);
   const data = await res.json();
   if (data?.error === "Unauthorized") throw new Error("Unauthorized");
   return data;
@@ -618,33 +582,33 @@ function handleIncPersonChange() {
 
 // ── ADD EXPENSE ───────────────────────────────────────────────
 async function addExpense() {
-  const date   = document.getElementById("expDate").value;
+  const date      = document.getElementById("expDate").value;
   const rawPerson = document.getElementById("expPerson").value;
-  const person = rawPerson === "Other"
+  const person    = rawPerson === "Other"
     ? document.getElementById("expPersonOther").value.trim()
     : rawPerson;
-  const amount = parseFloat(document.getElementById("expAmount").value);
-  const reason = document.getElementById("expReason").value.trim();
-  const mode   = document.getElementById("expMode").value;
-  const card   = document.getElementById("expCard").value;
+  const amount    = parseFloat(document.getElementById("expAmount").value);
+  const reason    = document.getElementById("expReason").value.trim();
+  const mode      = document.getElementById("expMode").value;
+  const card      = document.getElementById("expCard").value;
 
-  if (!date)              return showToast("Select a date", "error");
-  if (!person)            return showToast("Enter who spent", "error");
+  if (!date)             return showToast("Select a date", "error");
+  if (!person)           return showToast("Enter who spent", "error");
   if (!amount || amount <= 0) return showToast("Enter a valid amount", "error");
-  if (!reason)            return showToast("Enter a reason", "error");
-  if (!mode)              return showToast("Select payment mode", "error");
+  if (!reason)           return showToast("Enter a reason", "error");
+  if (!mode)             return showToast("Select payment mode", "error");
 
   const record = { id: "EX" + Date.now(), date, person, amount, reason, mode, card };
 
   showLoading(true);
   try {
-    await gasPost({ action: "saveExpense", record });
+    await gasGet("saveExpense", { record: JSON.stringify(record) });
     expenses.push(record);
     resetExpForm();
     toggleForm("expForm");
     renderExpTable();
     updateSummary();
-    showToast("✅ Expense saved to Google Sheets", "success");
+    showToast("✅ Expense saved", "success");
   } catch (e) {
     showToast("Save failed: " + e.message, "error");
   } finally {
@@ -665,37 +629,37 @@ function resetExpForm() {
 
 // ── ADD INCOME ────────────────────────────────────────────────
 async function addIncome() {
-  const date   = document.getElementById("incDate").value;
-  const rawBank = document.getElementById("incBank").value;
-  const bank   = rawBank === "Other"
+  const date      = document.getElementById("incDate").value;
+  const rawBank   = document.getElementById("incBank").value;
+  const bank      = rawBank === "Other"
     ? document.getElementById("incBankOther").value.trim()
     : rawBank;
-  const amount = parseFloat(document.getElementById("incAmount").value);
+  const amount    = parseFloat(document.getElementById("incAmount").value);
   const rawPerson = document.getElementById("incPerson").value;
-  const person = rawPerson === "Other"
+  const person    = rawPerson === "Other"
     ? document.getElementById("incPersonOther").value.trim()
     : rawPerson;
-  const mode   = document.getElementById("incMode").value;
-  const card   = document.getElementById("incCard").value;
-  const notes  = document.getElementById("incNotes").value.trim();
+  const mode      = document.getElementById("incMode").value;
+  const card      = document.getElementById("incCard").value;
+  const notes     = document.getElementById("incNotes").value.trim();
 
-  if (!date)              return showToast("Select a date", "error");
-  if (!bank)              return showToast("Select / enter bank", "error");
+  if (!date)             return showToast("Select a date", "error");
+  if (!bank)             return showToast("Select / enter bank", "error");
   if (!amount || amount <= 0) return showToast("Enter a valid amount", "error");
-  if (!person)            return showToast("Enter by person", "error");
-  if (!mode)              return showToast("Select payment mode", "error");
+  if (!person)           return showToast("Enter by person", "error");
+  if (!mode)             return showToast("Select payment mode", "error");
 
   const record = { id: "IN" + Date.now(), date, bank, amount, person, mode, card, notes };
 
   showLoading(true);
   try {
-    await gasPost({ action: "saveIncome", record });
+    await gasGet("saveIncome", { record: JSON.stringify(record) });
     incomes.push(record);
     resetIncForm();
     toggleForm("incForm");
     renderIncTable();
     updateSummary();
-    showToast("✅ Income saved to Google Sheets", "success");
+    showToast("✅ Income saved", "success");
   } catch (e) {
     showToast("Save failed: " + e.message, "error");
   } finally {
@@ -722,7 +686,7 @@ async function deleteExpense(id) {
   if (!confirm("Delete this expense?")) return;
   showLoading(true);
   try {
-    await gasPost({ action: "deleteExpense", id });
+    await gasGet("deleteExpense", { id });
     expenses = expenses.filter(e => e.id !== id);
     renderExpTable();
     updateSummary();
@@ -738,7 +702,7 @@ async function deleteIncome(id) {
   if (!confirm("Delete this income?")) return;
   showLoading(true);
   try {
-    await gasPost({ action: "deleteIncome", id });
+    await gasGet("deleteIncome", { id });
     incomes = incomes.filter(e => e.id !== id);
     renderIncTable();
     updateSummary();
@@ -758,9 +722,9 @@ function renderExpTable() {
   const search       = document.getElementById("expSearch").value.toLowerCase();
 
   const rows = expenses.filter(e => {
-    if (filterMonth  && !e.date.startsWith(filterMonth))           return false;
-    if (filterPerson && e.person !== filterPerson)                 return false;
-    if (filterMode   && e.mode   !== filterMode)                   return false;
+    if (filterMonth  && !e.date.startsWith(filterMonth))                  return false;
+    if (filterPerson && e.person !== filterPerson)                        return false;
+    if (filterMode   && e.mode   !== filterMode)                          return false;
     if (search       && !(e.reason || "").toLowerCase().includes(search)) return false;
     return true;
   }).sort((a, b) => b.date.localeCompare(a.date));
@@ -789,11 +753,11 @@ function renderIncTable() {
   const search       = document.getElementById("incSearch").value.toLowerCase();
 
   const rows = incomes.filter(e => {
-    if (filterMonth  && !e.date.startsWith(filterMonth))   return false;
-    if (filterPerson && e.person !== filterPerson)          return false;
+    if (filterMonth  && !e.date.startsWith(filterMonth))    return false;
+    if (filterPerson && e.person !== filterPerson)           return false;
     if (search &&
         !(e.notes || "").toLowerCase().includes(search) &&
-        !(e.bank  || "").toLowerCase().includes(search))   return false;
+        !(e.bank  || "").toLowerCase().includes(search))    return false;
     return true;
   }).sort((a, b) => b.date.localeCompare(a.date));
 
