@@ -1,3 +1,313 @@
+
+Claude finished the response
+
+// ============================================================ // SAPZCODES PAYROLL SYSTEM — Code.gs (Complete) // ============================================================ // Sheet names expected: // Employees | Attendance | Payroll_Run | Reimbursements // FnF | Tax_Declarations | Aud
+
+pasted
+
+
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>SAPZCODES — Expenses & Income</title> <link rel="icon" href="favicon.png" /> <link rel="stylesheet" href="style.css" /> <style> :root { --exp-r
+
+pasted
+
+fetch is failed. let the card be a dropdown option.
+
+4:57 PM
+Looking at the code, the fetch fails because GAS endpoints don't support CORS on direct fetch calls from browsers — you need to use no-cors mode or a <form> redirect trick, but the real fix for GAS is to use fetch with mode: 'no-cors' for POST, or better — switch to <form> submission with a hidden iframe for writes, and a JSONP-style <script> tag for reads.
+
+But actually the simpler fix: GAS doPost works fine with fetch if the deployment is set to "Anyone" access. The most common real cause is the deployment being restricted.
+
+However, since you said let the card be a dropdown option — I'll interpret this as: remove the dynamic card row that shows/hides based on mode, and instead just always show a "Card Used" dropdown in the form (pre-populated), making it simpler and fixing any JS errors that might be causing fetch issues.
+
+Here are the surgical fixes to expenses.html:
+
+1. Remove the hidden card row logic entirely — make Card a plain always-visible dropdown in both Expense and Income forms.
+
+In the Expense form, replace the mode pills + hidden card row block:
+
+Here are the minimal surgical changes needed. The core issue with GAS fetch is usually the deployment scope — but since you want the card as a dropdown (always visible, no hide/show logic), I'll strip all the conditional card row JS and make it a static dropdown.
+
+Changes to make in expenses.html:
+
+1. Expense form — replace the entire mode pills + hidden card section with just two static dropdowns:
+
+html
+<!-- REMOVE this entire block: -->
+<div class="field full">
+  <label>Mode of Payment</label>
+  <div class="mode-pills">...</div>
+</div>
+<div class="field hidden-row" id="expCardRow">...</div>
+<div class="field hidden-row" id="expCardOtherRow">...</div>
+
+<!-- REPLACE with: -->
+<div class="field">
+  <label>Mode of Payment</label>
+  <select id="expMode">
+    <option value="">— Select —</option>
+    <option>Cash</option>
+    <option>Card</option>
+    <option>GPay</option>
+  </select>
+</div>
+
+<div class="field">
+  <label>Card Used</label>
+  <select id="expCard">
+    <option value="">— None / N/A —</option>
+    <option value="HDFC (Gautham)">HDFC — Gautham</option>
+    <option value="ICICI (Manoj)">ICICI — Manoj</option>
+    <option value="HDFC (Manoj)">HDFC — Manoj</option>
+    <option value="SBI (Manoj)">SBI — Manoj</option>
+  </select>
+</div>
+2. Income form — same, replace the mode pills + hidden card section:
+
+html
+<!-- REMOVE mode pills block + incCardRow + incCardOtherRow -->
+
+<!-- REPLACE with: -->
+<div class="field">
+  <label>Mode of Payment</label>
+  <select id="incMode">
+    <option value="">— Select —</option>
+    <option>Cash</option>
+    <option>Card</option>
+    <option>GPay</option>
+    <option>Bank Transfer</option>
+  </select>
+</div>
+
+<div class="field">
+  <label>Card Used</label>
+  <select id="incCard">
+    <option value="">— None / N/A —</option>
+    <option value="HDFC (Gautham)">HDFC — Gautham</option>
+    <option value="ICICI (Manoj)">ICICI — Manoj</option>
+    <option value="HDFC (Manoj)">HDFC — Manoj</option>
+    <option value="SBI (Manoj)">SBI — Manoj</option>
+  </select>
+</div>
+3. In addExpense() — update how mode and card are read:
+
+js
+// REMOVE: const rawCard = ..., selectedExpMode checks, card logic
+// REPLACE the relevant lines with:
+const mode = document.getElementById("expMode").value;
+const card = document.getElementById("expCard").value;
+
+if (!mode) return showToast("Select payment mode", "error");
+// Remove the Card+!card check entirely
+
+const record = {
+  id: "EX" + Date.now(),
+  date, person, amount, reason, mode, card
+};
+4. In addIncome() — same:
+
+js
+const mode = document.getElementById("incMode").value;
+const card = document.getElementById("incCard").value;
+
+if (!mode) return showToast("Select payment mode", "error");
+
+const record = {
+  id: "IN" + Date.now(),
+  date, bank, amount, person, mode, card, notes
+};
+5. In resetExpForm() — remove pill reset, add:
+
+js
+document.getElementById("expMode").value = "";
+document.getElementById("expCard").value = "";
+// Remove selectedExpMode = "" and the pill forEach
+6. In resetIncForm() — same:
+
+js
+document.getElementById("incMode").value = "";
+document.getElementById("incCard").value = "";
+// Remove selectedIncMode = "" and the pill forEach
+7. At the top of script, delete:
+
+js
+let selectedExpMode = "";
+let selectedIncMode = "";
+And delete all selectExpMode(), selectIncMode(), handleExpCardChange(), handleIncCardChange() functions entirely.
+
+Re: fetch failing — separately check your GAS deployment is set to Execute as: Me and Who has access: Anyone. That's the #1 cause of GAS fetch failures from a browser. The no-cors mode won't help for POST because you can't read the response in that mode.
+
+
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>SAPZCODES — Expenses & Income</title> <link rel="icon" href="favicon.png" /> <link rel="stylesheet" href="style.css" /> <style> :root { --exp-red: #ff
+
+pasted
+
+check and rewrite the entire file.
+
+10:21 AM
+The current file has several issues: duplicate id="expCard" and id="incCard", leftover dead code from old pill system mixed with new dropdown code, duplicate variable declarations (const card declared twice in addExpense/addIncome), stale references to selectedExpMode/selectedIncMode still in validation, and dead handleExpCardChange/handleIncCardChange still wired in window.onload. Let me give you a clean rewrite.
+
+
+Ran a command, created a file, read a file
+Ran a command, created a file, read a file
+Here's what was cleaned up in the rewrite:
+
+Bugs fixed:
+
+Removed duplicate id="expCard" and id="incCard" (the old hidden rows had the same IDs as the new dropdowns — browser was picking the wrong element)
+Removed const card = ... declared twice inside addExpense() and addIncome() (syntax error)
+Removed stale selectedExpMode / selectedIncMode checks still left in validation after switching to dropdowns
+Removed dead handleExpCardChange / handleIncCardChange wired in window.onload pointing to non-existent elements
+Dead code removed:
+
+All mode pills HTML, CSS, and JS (selectExpMode, selectIncMode, pill reset loops)
+expCardRow, expCardOtherRow, incCardRow, incCardOtherRow hidden row elements
+expCardOther, incCardOther inputs
+let selectedExpMode / let selectedIncMode variables
+References to rawCard in both add functions
+Form logic now: both addExpense and addIncome read plain #expMode/#expCard and #incMode/#incCard dropdowns, validate only that mode is selected, and build the record cleanly.
+
+
+Expenses
+Code · HTML 
+
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>SAPZCODES — Expenses & Income</title> <link rel="icon" href="favicon.png" /> <link rel="stylesheet" href="style.css" /> <style> :root { --exp-r
+
+pasted
+
+
+// ============================================================ // SAPZCODES PAYROLL SYSTEM — Code.gs (Complete) // ============================================================ // Sheet names expected: // Employees | Attendance | Payroll_Run | Reimbursements // FnF | Tax_Declarations | Aud
+
+pasted
+
+I tried to add a new expense and save it. I got error - failed to fetch.
+
+10:35 AM
+The fetch itself is working (login passed since you got to the page). The issue is specifically with POST to GAS — GAS deployed web apps redirect POST requests, and fetch with Content-Type: application/json fails on that redirect because browsers block cross-origin redirects for non-simple requests.
+
+The fix: GAS requires POST body as application/x-www-form-urlencoded or you need to send it as a no-cors GET with params. But the cleanest fix for GAS is to send POST data as a URL-encoded form, which doesn't trigger CORS preflight.
+
+However since your GAS reads e.postData.contents as JSON, the real fix is simpler — switch saveExpense/saveIncome/deleteExpense/deleteIncome to GET requests with URL params instead of POST. GAS GET has no CORS issues at all.
+
+Two changes needed:
+
+1. In Code.gs — add the 4 actions to doGet:
+
+
+Add write actions to doGet in Code.gs
+Add write actions to doGet in Code.gs
+The Code.gs is read-only from context — give you the exact edits as text:
+
+1. In Code.gs doGet switch, add these 4 cases (alongside the existing getExpenses/getIncomes):
+
+js
+case "saveExpense":   return jsonOut(saveExpense(JSON.parse(e.parameter.record)));
+case "saveIncome":    return jsonOut(saveIncome(JSON.parse(e.parameter.record)));
+case "deleteExpense": return jsonOut(deleteExpense(e.parameter.id));
+case "deleteIncome":  return jsonOut(deleteIncome(e.parameter.id));
+2. In expenses.html — replace the entire gasPost function and the 3 callers:
+
+Replace gasPost:
+
+js
+async function gasGet(action, params = {}) {
+  const res  = await fetch(`${API_URL}?${new URLSearchParams({ action, token: ADMIN_TOKEN, ...params })}`);
+  const data = await res.json();
+  if (data?.error === "Unauthorized") throw new Error("Unauthorized");
+  return data;
+}
+Replace gasPost calls in addExpense, addIncome, deleteExpense, deleteIncome:
+
+js
+// addExpense — replace:
+await gasPost({ action: "saveExpense", record });
+// with:
+await gasGet("saveExpense", { record: JSON.stringify(record) });
+
+// addIncome — replace:
+await gasPost({ action: "saveIncome", record });
+// with:
+await gasGet("saveIncome", { record: JSON.stringify(record) });
+
+// deleteExpense — replace:
+await gasPost({ action: "deleteExpense", id });
+// with:
+await gasGet("deleteExpense", { id });
+
+// deleteIncome — replace:
+await gasPost({ action: "deleteIncome", id });
+// with:
+await gasGet("deleteIncome", { id });
+And delete the gasPost function entirely — it's no longer needed for these 4 calls.
+
+Here's the updated expenses.html with all of this applied:
+
+
+Ran a command, read a file
+Ran a command, read a file
+What changed and why:
+
+The root cause — GAS deployed web apps issue a 302 redirect when you POST to them. The browser follows it but drops the Content-Type: application/json header on the redirected request, which causes a CORS preflight failure = "Failed to fetch". GET requests don't have this problem.
+
+Frontend: Replaced gasPost entirely — now a single gasGet(action, params) function handles everything. saveExpense/saveIncome pass the record as JSON.stringify(record) in the URL params. deleteExpense/deleteIncome just pass the id.
+
+You must also update Code.gs — add these 4 cases to your doGet switch right below getIncomes:
+
+js
+case "saveExpense":   return jsonOut(saveExpense(JSON.parse(e.parameter.record)));
+case "saveIncome":    return jsonOut(saveIncome(JSON.parse(e.parameter.record)));
+case "deleteExpense": return jsonOut(deleteExpense(e.parameter.id));
+case "deleteIncome":  return jsonOut(deleteIncome(e.parameter.id));
+Then redeploy the GAS as a new version. That's all that's needed.
+
+
+Expenses
+Code · HTML 
+give me entire code gs too. Is the provided expenses.html fully updated?
+
+10:44 AM
+Yes, expenses.html is fully updated. Here's the complete Code.gs with the 4 new GET cases added:
+
+
+Write complete Code.gs
+Write complete Code.gs
+
+Write complete Code.gs
+
+Script
+Done
+try now to present
+
+10:03 AM
+
+Presented 2 files
+Presented 2 files
+Both files are ready. Quick checklist before you deploy:
+
+Code.gs — after pasting, do these two things in the Apps Script editor:
+
+Deploy → New deployment (don't just save — must redeploy for doGet changes to take effect)
+Set access to Anyone under "Who has access"
+expenses.html — just replace your existing file, no other changes needed.
+
+That's it — save/add should work after the redeployment.
+
+
+Code
+GS 
+
+Expenses
+Code · HTML 
+
+Want to be notified when Claude responds?
+
+
+
+
+Claude is AI and can make mistakes. Please double-check responses.
+
+
+raw
+Expenses · HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +324,7 @@
   --mode-card: #5b8dee;
   --mode-gpay: #34a853;
 }
-
+ 
 .tab-bar {
   display: flex; gap: 4px;
   background: var(--surface2, #111122);
@@ -31,7 +341,7 @@
 .tab-btn.active          { background: var(--primary, #5b8dee); color: #fff; }
 .tab-btn.tab-exp.active  { background: var(--exp-red); }
 .tab-btn.tab-inc.active  { background: var(--inc-green); }
-
+ 
 .form-panel {
   display: none;
   background: var(--surface, #1a1a2e);
@@ -44,7 +354,7 @@
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
+ 
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -52,7 +362,7 @@
 }
 .form-grid .field        { margin-bottom: 0; }
 .form-grid .field.full   { grid-column: 1 / -1; }
-
+ 
 .field label {
   display: block; font-size: 11px; font-weight: 700;
   letter-spacing: .08em; text-transform: uppercase;
@@ -72,9 +382,9 @@
 .field select:focus,
 .field textarea:focus   { outline: none; border-color: var(--primary, #5b8dee); }
 .field select option    { background: var(--bg, #0f0f1a); }
-
+ 
 .hidden-row { display: none; }
-
+ 
 .summary-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
 .sum-card {
   flex: 1; min-width: 150px;
@@ -87,7 +397,7 @@
 .sum-card.s-exp .sum-val { color: var(--exp-red); }
 .sum-card.s-inc .sum-val { color: var(--inc-green); }
 .sum-card.s-bal .sum-val { color: var(--primary, #5b8dee); }
-
+ 
 .filter-row {
   display: flex; gap: 10px; align-items: center;
   flex-wrap: wrap; margin-bottom: 14px;
@@ -101,7 +411,7 @@
 }
 .filter-row input:focus,
 .filter-row select:focus { outline: none; border-color: var(--primary, #5b8dee); }
-
+ 
 .exp-table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border, #2a2a3e); }
 .exp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 .exp-table thead tr { background: var(--surface2, #111122); }
@@ -118,7 +428,7 @@
 }
 .exp-table tbody tr:last-child td  { border-bottom: none; }
 .exp-table tbody tr:hover td       { background: rgba(255,255,255,.02); }
-
+ 
 .mode-badge {
   display: inline-block; padding: 2px 9px; border-radius: 10px;
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
@@ -128,25 +438,25 @@
 .mode-gpay          { background: rgba(52,168,83,.15);   color: var(--mode-gpay); }
 .mode-upi           { background: rgba(52,168,83,.15);   color: var(--mode-gpay); }
 .mode-bank-transfer { background: rgba(52,168,83,.15);   color: var(--mode-gpay); }
-
+ 
 .amount-exp { color: var(--exp-red);   font-weight: 700; }
 .amount-inc { color: var(--inc-green); font-weight: 700; }
-
+ 
 .del-btn {
   background: none; border: none; cursor: pointer;
   color: var(--muted, #888); font-size: 14px; padding: 2px 6px;
   border-radius: 4px; transition: color .15s;
 }
 .del-btn:hover { color: var(--exp-red); }
-
+ 
 .empty-row td { text-align: center; padding: 32px; color: var(--muted, #888); font-style: italic; }
-
+ 
 .section-head {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 12px;
 }
 .section-head h3 { font-size: 14px; font-weight: 700; color: var(--text, #e8e8f0); margin: 0; }
-
+ 
 .loading-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,.5);
   display: none; align-items: center; justify-content: center;
@@ -162,9 +472,9 @@
 </style>
 </head>
 <body>
-
+ 
 <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
-
+ 
 <!-- LOGIN OVERLAY -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-box">
@@ -185,7 +495,7 @@
     <div class="login-note">🔒 Restricted to hr@sapzcodes.com only</div>
   </div>
 </div>
-
+ 
 <!-- SIDEBAR -->
 <div class="sidebar">
   <div class="sidebar-logo">
@@ -218,7 +528,7 @@
     <button class="logout-btn" onclick="doLogout()">↩ Logout</button>
   </div>
 </div>
-
+ 
 <!-- MAIN -->
 <div class="main">
   <div class="topbar">
@@ -227,9 +537,9 @@
       <div class="month-badge" id="currentMonthBadge">— / —</div>
     </div>
   </div>
-
+ 
   <div class="content">
-
+ 
     <div class="summary-bar">
       <div class="sum-card s-exp">
         <div class="sum-label">Total Expenses</div>
@@ -244,19 +554,19 @@
         <div class="sum-val" id="sumBal">₹0</div>
       </div>
     </div>
-
+ 
     <div class="tab-bar">
       <button class="tab-btn tab-exp active" onclick="switchTab('exp')">💸 Expenses</button>
       <button class="tab-btn tab-inc"        onclick="switchTab('inc')">💰 Income</button>
     </div>
-
+ 
     <!-- ═══ EXPENSES SECTION ═══ -->
     <div id="expSection">
       <div class="section-head">
         <h3>Expense Records</h3>
         <button class="btn btn-primary" onclick="toggleForm('expForm')">+ Add Expense</button>
       </div>
-
+ 
       <div class="form-panel" id="expForm">
         <div class="form-grid">
           <div class="field">
@@ -313,7 +623,7 @@
           <button class="btn" onclick="toggleForm('expForm')" style="background:var(--surface2,#111122)">Cancel</button>
         </div>
       </div>
-
+ 
       <div class="filter-row">
         <input type="month" id="expFilterMonth" onchange="renderExpTable()" />
         <select id="expFilterPerson" onchange="renderExpTable()">
@@ -327,7 +637,7 @@
         </select>
         <input type="text" id="expSearch" placeholder="Search reason..." oninput="renderExpTable()" style="min-width:160px;" />
       </div>
-
+ 
       <div class="exp-table-wrap">
         <table class="exp-table">
           <thead>
@@ -342,14 +652,14 @@
         </table>
       </div>
     </div>
-
+ 
     <!-- ═══ INCOME SECTION ═══ -->
     <div id="incSection" style="display:none">
       <div class="section-head">
         <h3>Income Records</h3>
         <button class="btn btn-primary" onclick="toggleForm('incForm')">+ Add Income</button>
       </div>
-
+ 
       <div class="form-panel" id="incForm">
         <div class="form-grid">
           <div class="field">
@@ -423,7 +733,7 @@
           <button class="btn" onclick="toggleForm('incForm')" style="background:var(--surface2,#111122)">Cancel</button>
         </div>
       </div>
-
+ 
       <div class="filter-row">
         <input type="month" id="incFilterMonth" onchange="renderIncTable()" />
         <select id="incFilterPerson" onchange="renderIncTable()">
@@ -433,7 +743,7 @@
         </select>
         <input type="text" id="incSearch" placeholder="Search notes..." oninput="renderIncTable()" style="min-width:160px;" />
       </div>
-
+ 
       <div class="exp-table-wrap">
         <table class="exp-table">
           <thead>
@@ -448,18 +758,18 @@
         </table>
       </div>
     </div>
-
+ 
   </div>
 </div>
-
+ 
 <div class="toast" id="toast"></div>
-
+ 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbzdjsklfEPMmA17LcHknasvTCpTztAcqEwBdu3FCD5zi1kpAmNMKyMmaMVbYvz3S8RJ/exec";
 let ADMIN_TOKEN = "";
 let expenses = [];
 let incomes  = [];
-
+ 
 // ── AUTH ──────────────────────────────────────────────────────
 async function doLogin() {
   const email = document.getElementById("loginEmail").value.trim();
@@ -479,7 +789,7 @@ async function doLogin() {
     initPage();
   } catch { err.textContent = "Could not reach server."; }
 }
-
+ 
 function checkAuth() {
   const token = sessionStorage.getItem("szc_token");
   const email = sessionStorage.getItem("szc_email");
@@ -490,9 +800,9 @@ function checkAuth() {
   }
   return false;
 }
-
+ 
 function doLogout() { sessionStorage.clear(); location.reload(); }
-
+ 
 // ── SINGLE API HELPER — all calls are GET to avoid CORS/redirect issues ──
 async function gasGet(action, params = {}) {
   const url  = `${API_URL}?${new URLSearchParams({ action, token: ADMIN_TOKEN, ...params })}`;
@@ -501,7 +811,7 @@ async function gasGet(action, params = {}) {
   if (data?.error === "Unauthorized") throw new Error("Unauthorized");
   return data;
 }
-
+ 
 // ── DATA LOADERS ──────────────────────────────────────────────
 async function loadExpenses() {
   try {
@@ -512,7 +822,7 @@ async function loadExpenses() {
     expenses = [];
   }
 }
-
+ 
 async function loadIncomes() {
   try {
     const data = await gasGet("getIncomes");
@@ -522,7 +832,7 @@ async function loadIncomes() {
     incomes = [];
   }
 }
-
+ 
 // ── INIT ──────────────────────────────────────────────────────
 async function initPage() {
   setCurrentMonth();
@@ -538,17 +848,17 @@ async function initPage() {
   renderIncTable();
   updateSummary();
 }
-
+ 
 function setCurrentMonth() {
   const now    = new Date();
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   document.getElementById("currentMonthBadge").textContent = months[now.getMonth()] + " " + now.getFullYear();
 }
-
+ 
 function showLoading(v) {
   document.getElementById("loadingOverlay").classList.toggle("show", v);
 }
-
+ 
 // ── TABS / FORM ───────────────────────────────────────────────
 function switchTab(tab) {
   document.getElementById("expSection").style.display = tab === "exp" ? "" : "none";
@@ -556,30 +866,30 @@ function switchTab(tab) {
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
   document.querySelector(".tab-" + tab).classList.add("active");
 }
-
+ 
 function toggleForm(id) {
   document.getElementById(id).classList.toggle("open");
 }
-
+ 
 // ── CONDITIONAL "OTHER" ROWS ──────────────────────────────────
 function handleExpPersonChange() {
   const v = document.getElementById("expPerson").value;
   document.getElementById("expOtherRow").style.display = v === "Other" ? "" : "none";
   if (v !== "Other") document.getElementById("expPersonOther").value = "";
 }
-
+ 
 function handleIncBankChange() {
   const v = document.getElementById("incBank").value;
   document.getElementById("incBankOtherRow").style.display = v === "Other" ? "" : "none";
   if (v !== "Other") document.getElementById("incBankOther").value = "";
 }
-
+ 
 function handleIncPersonChange() {
   const v = document.getElementById("incPerson").value;
   document.getElementById("incPersonOtherRow").style.display = v === "Other" ? "" : "none";
   if (v !== "Other") document.getElementById("incPersonOther").value = "";
 }
-
+ 
 // ── ADD EXPENSE ───────────────────────────────────────────────
 async function addExpense() {
   const date      = document.getElementById("expDate").value;
@@ -591,15 +901,15 @@ async function addExpense() {
   const reason    = document.getElementById("expReason").value.trim();
   const mode      = document.getElementById("expMode").value;
   const card      = document.getElementById("expCard").value;
-
+ 
   if (!date)             return showToast("Select a date", "error");
   if (!person)           return showToast("Enter who spent", "error");
   if (!amount || amount <= 0) return showToast("Enter a valid amount", "error");
   if (!reason)           return showToast("Enter a reason", "error");
   if (!mode)             return showToast("Select payment mode", "error");
-
+ 
   const record = { id: "EX" + Date.now(), date, person, amount, reason, mode, card };
-
+ 
   showLoading(true);
   try {
     await gasGet("saveExpense", { record: JSON.stringify(record) });
@@ -615,7 +925,7 @@ async function addExpense() {
     showLoading(false);
   }
 }
-
+ 
 function resetExpForm() {
   document.getElementById("expDate").valueAsDate = new Date();
   document.getElementById("expPerson").value      = "";
@@ -626,7 +936,7 @@ function resetExpForm() {
   document.getElementById("expCard").value        = "";
   document.getElementById("expOtherRow").style.display = "none";
 }
-
+ 
 // ── ADD INCOME ────────────────────────────────────────────────
 async function addIncome() {
   const date      = document.getElementById("incDate").value;
@@ -642,15 +952,15 @@ async function addIncome() {
   const mode      = document.getElementById("incMode").value;
   const card      = document.getElementById("incCard").value;
   const notes     = document.getElementById("incNotes").value.trim();
-
+ 
   if (!date)             return showToast("Select a date", "error");
   if (!bank)             return showToast("Select / enter bank", "error");
   if (!amount || amount <= 0) return showToast("Enter a valid amount", "error");
   if (!person)           return showToast("Enter by person", "error");
   if (!mode)             return showToast("Select payment mode", "error");
-
+ 
   const record = { id: "IN" + Date.now(), date, bank, amount, person, mode, card, notes };
-
+ 
   showLoading(true);
   try {
     await gasGet("saveIncome", { record: JSON.stringify(record) });
@@ -666,7 +976,7 @@ async function addIncome() {
     showLoading(false);
   }
 }
-
+ 
 function resetIncForm() {
   document.getElementById("incDate").valueAsDate    = new Date();
   document.getElementById("incBank").value          = "";
@@ -680,7 +990,7 @@ function resetIncForm() {
   document.getElementById("incBankOtherRow").style.display   = "none";
   document.getElementById("incPersonOtherRow").style.display = "none";
 }
-
+ 
 // ── DELETE ────────────────────────────────────────────────────
 async function deleteExpense(id) {
   if (!confirm("Delete this expense?")) return;
@@ -697,7 +1007,7 @@ async function deleteExpense(id) {
     showLoading(false);
   }
 }
-
+ 
 async function deleteIncome(id) {
   if (!confirm("Delete this income?")) return;
   showLoading(true);
@@ -713,14 +1023,14 @@ async function deleteIncome(id) {
     showLoading(false);
   }
 }
-
+ 
 // ── RENDER TABLES ─────────────────────────────────────────────
 function renderExpTable() {
   const filterMonth  = document.getElementById("expFilterMonth").value;
   const filterPerson = document.getElementById("expFilterPerson").value;
   const filterMode   = document.getElementById("expFilterMode").value;
   const search       = document.getElementById("expSearch").value.toLowerCase();
-
+ 
   const rows = expenses.filter(e => {
     if (filterMonth  && !e.date.startsWith(filterMonth))                  return false;
     if (filterPerson && e.person !== filterPerson)                        return false;
@@ -728,7 +1038,7 @@ function renderExpTable() {
     if (search       && !(e.reason || "").toLowerCase().includes(search)) return false;
     return true;
   }).sort((a, b) => b.date.localeCompare(a.date));
-
+ 
   const tbody = document.getElementById("expTableBody");
   if (!rows.length) {
     tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No expenses match the filters.</td></tr>';
@@ -746,12 +1056,12 @@ function renderExpTable() {
       <td><button class="del-btn" onclick="deleteExpense('${e.id}')">🗑</button></td>
     </tr>`).join("");
 }
-
+ 
 function renderIncTable() {
   const filterMonth  = document.getElementById("incFilterMonth").value;
   const filterPerson = document.getElementById("incFilterPerson").value;
   const search       = document.getElementById("incSearch").value.toLowerCase();
-
+ 
   const rows = incomes.filter(e => {
     if (filterMonth  && !e.date.startsWith(filterMonth))    return false;
     if (filterPerson && e.person !== filterPerson)           return false;
@@ -760,7 +1070,7 @@ function renderIncTable() {
         !(e.bank  || "").toLowerCase().includes(search))    return false;
     return true;
   }).sort((a, b) => b.date.localeCompare(a.date));
-
+ 
   const tbody = document.getElementById("incTableBody");
   if (!rows.length) {
     tbody.innerHTML = '<tr class="empty-row"><td colspan="9">No income records match the filters.</td></tr>';
@@ -779,7 +1089,7 @@ function renderIncTable() {
       <td><button class="del-btn" onclick="deleteIncome('${e.id}')">🗑</button></td>
     </tr>`).join("");
 }
-
+ 
 // ── SUMMARY ───────────────────────────────────────────────────
 function updateSummary() {
   const totalExp = expenses.reduce((s, e) => s + Number(e.amount), 0);
@@ -791,7 +1101,7 @@ function updateSummary() {
   balEl.textContent = (bal < 0 ? "−₹" : "₹") + fmt(Math.abs(bal));
   balEl.style.color = bal < 0 ? "var(--exp-red)" : "var(--inc-green)";
 }
-
+ 
 // ── HELPERS ───────────────────────────────────────────────────
 function fmt(n) {
   return Number(n).toLocaleString("en-IN", { maximumFractionDigits: 2 });
@@ -807,7 +1117,7 @@ function showToast(msg, type = "success") {
   t.className   = "toast " + type + " show";
   setTimeout(() => t.classList.remove("show"), 3000);
 }
-
+ 
 // ── BOOT ──────────────────────────────────────────────────────
 window.onload = () => {
   if (checkAuth()) initPage();
@@ -818,3 +1128,4 @@ window.onload = () => {
 </script>
 </body>
 </html>
+ 
