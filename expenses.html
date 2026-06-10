@@ -14,7 +14,6 @@
   --mode-card: #5b8dee;
   --mode-gpay: #34a853;
 }
-
 .tab-bar {
   display: flex; gap: 4px;
   background: var(--surface2, #111122);
@@ -28,10 +27,9 @@
   background: transparent;
   color: var(--muted, #888); transition: all .2s;
 }
-.tab-btn.active          { background: var(--primary, #5b8dee); color: #fff; }
-.tab-btn.tab-exp.active  { background: var(--exp-red); }
-.tab-btn.tab-inc.active  { background: var(--inc-green); }
-
+.tab-btn.active         { background: var(--primary, #5b8dee); color: #fff; }
+.tab-btn.tab-exp.active { background: var(--exp-red); }
+.tab-btn.tab-inc.active { background: var(--inc-green); }
 .form-panel {
   display: none;
   background: var(--surface, #1a1a2e);
@@ -44,23 +42,20 @@
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 14px;
 }
-.form-grid .field        { margin-bottom: 0; }
-.form-grid .field.full   { grid-column: 1 / -1; }
-
+.form-grid .field      { margin-bottom: 0; }
+.form-grid .field.full { grid-column: 1 / -1; }
 .field label {
   display: block; font-size: 11px; font-weight: 700;
   letter-spacing: .08em; text-transform: uppercase;
   color: var(--muted, #888); margin-bottom: 5px;
 }
 .field input,
-.field select,
-.field textarea {
+.field select {
   width: 100%; box-sizing: border-box;
   background: var(--bg, #0f0f1a);
   border: 1px solid var(--border, #2a2a3e);
@@ -69,12 +64,9 @@
   transition: border-color .15s;
 }
 .field input:focus,
-.field select:focus,
-.field textarea:focus   { outline: none; border-color: var(--primary, #5b8dee); }
-.field select option    { background: var(--bg, #0f0f1a); }
-
+.field select:focus { outline: none; border-color: var(--primary, #5b8dee); }
+.field select option { background: var(--bg, #0f0f1a); }
 .hidden-row { display: none; }
-
 .summary-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
 .sum-card {
   flex: 1; min-width: 150px;
@@ -87,7 +79,6 @@
 .sum-card.s-exp .sum-val { color: var(--exp-red); }
 .sum-card.s-inc .sum-val { color: var(--inc-green); }
 .sum-card.s-bal .sum-val { color: var(--primary, #5b8dee); }
-
 .filter-row {
   display: flex; gap: 10px; align-items: center;
   flex-wrap: wrap; margin-bottom: 14px;
@@ -101,7 +92,6 @@
 }
 .filter-row input:focus,
 .filter-row select:focus { outline: none; border-color: var(--primary, #5b8dee); }
-
 .exp-table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border, #2a2a3e); }
 .exp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 .exp-table thead tr { background: var(--surface2, #111122); }
@@ -116,37 +106,31 @@
   padding: 10px 14px; border-bottom: 1px solid var(--border, #2a2a3e);
   color: var(--text, #e8e8f0); vertical-align: middle;
 }
-.exp-table tbody tr:last-child td  { border-bottom: none; }
-.exp-table tbody tr:hover td       { background: rgba(255,255,255,.02); }
-
+.exp-table tbody tr:last-child td { border-bottom: none; }
+.exp-table tbody tr:hover td      { background: rgba(255,255,255,.02); }
 .mode-badge {
   display: inline-block; padding: 2px 9px; border-radius: 10px;
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
 }
-.mode-cash          { background: rgba(244,196,48,.15);  color: var(--mode-cash); }
-.mode-card          { background: rgba(91,141,238,.15);  color: var(--mode-card); }
-.mode-gpay          { background: rgba(52,168,83,.15);   color: var(--mode-gpay); }
-.mode-upi           { background: rgba(52,168,83,.15);   color: var(--mode-gpay); }
-.mode-bank-transfer { background: rgba(52,168,83,.15);   color: var(--mode-gpay); }
-
+.mode-cash          { background: rgba(244,196,48,.15); color: var(--mode-cash); }
+.mode-card          { background: rgba(91,141,238,.15); color: var(--mode-card); }
+.mode-gpay          { background: rgba(52,168,83,.15);  color: var(--mode-gpay); }
+.mode-upi           { background: rgba(52,168,83,.15);  color: var(--mode-gpay); }
+.mode-bank-transfer { background: rgba(52,168,83,.15);  color: var(--mode-gpay); }
 .amount-exp { color: var(--exp-red);   font-weight: 700; }
 .amount-inc { color: var(--inc-green); font-weight: 700; }
-
 .del-btn {
   background: none; border: none; cursor: pointer;
   color: var(--muted, #888); font-size: 14px; padding: 2px 6px;
   border-radius: 4px; transition: color .15s;
 }
 .del-btn:hover { color: var(--exp-red); }
-
 .empty-row td { text-align: center; padding: 32px; color: var(--muted, #888); font-style: italic; }
-
 .section-head {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 12px;
 }
 .section-head h3 { font-size: 14px; font-weight: 700; color: var(--text, #e8e8f0); margin: 0; }
-
 .loading-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,.5);
   display: none; align-items: center; justify-content: center;
@@ -376,22 +360,10 @@
             <label>Amount (₹)</label>
             <input type="number" id="incAmount" placeholder="0" min="0" step="0.01" />
           </div>
+          <!-- FREE TEXT — By Person -->
           <div class="field">
             <label>By Person</label>
-            <select id="incPerson" onchange="handleIncPersonChange()">
-              <option value="">— Select —</option>
-              <option>Gautham</option>
-              <option>Manoj</option>
-              <option>Sathish</option>
-              <option>Suthika</option>
-              <option>Sravanthi</option>
-              <option>Janapriya</option>
-              <option value="Other">Other (specify)</option>
-            </select>
-          </div>
-          <div class="field hidden-row" id="incPersonOtherRow">
-            <label>Specify Person</label>
-            <input type="text" id="incPersonOther" placeholder="Enter name" />
+            <input type="text" id="incPerson" placeholder="Enter name" />
           </div>
           <div class="field">
             <label>Mode of Payment</label>
@@ -426,12 +398,8 @@
 
       <div class="filter-row">
         <input type="month" id="incFilterMonth" onchange="renderIncTable()" />
-        <select id="incFilterPerson" onchange="renderIncTable()">
-          <option value="">All People</option>
-          <option>Gautham</option><option>Manoj</option><option>Sathish</option>
-          <option>Suthika</option><option>Sravanthi</option><option>Janapriya</option>
-        </select>
-        <input type="text" id="incSearch" placeholder="Search notes..." oninput="renderIncTable()" style="min-width:160px;" />
+        <input type="text" id="incFilterPerson" placeholder="Filter by person..." oninput="renderIncTable()" style="min-width:140px;" />
+        <input type="text" id="incSearch" placeholder="Search notes / bank..." oninput="renderIncTable()" style="min-width:160px;" />
       </div>
 
       <div class="exp-table-wrap">
@@ -468,16 +436,24 @@ async function doLogin() {
   if (email !== "hr@sapzcodes.com") { err.textContent = "Access restricted."; err.classList.add("show"); return; }
   if (!token) { err.textContent = "Admin token required."; err.classList.add("show"); return; }
   err.textContent = "Verifying..."; err.classList.add("show");
+  // Temporarily set token for the verify call
+  ADMIN_TOKEN = token;
   try {
     const data = await gasGet("getAuditLog");
-    if (data?.error === "Unauthorized") { err.textContent = "Invalid admin token."; return; }
-    ADMIN_TOKEN = token;
+    if (data?.error === "Unauthorized") {
+      ADMIN_TOKEN = "";
+      err.textContent = "Invalid admin token.";
+      return;
+    }
     sessionStorage.setItem("szc_token", token);
     sessionStorage.setItem("szc_email", email);
     document.getElementById("loginOverlay").style.display = "none";
     err.classList.remove("show");
     initPage();
-  } catch { err.textContent = "Could not reach server."; }
+  } catch (e) {
+    ADMIN_TOKEN = "";
+    err.textContent = "Could not reach server: " + e.message;
+  }
 }
 
 function checkAuth() {
@@ -493,12 +469,14 @@ function checkAuth() {
 
 function doLogout() { sessionStorage.clear(); location.reload(); }
 
-// ── SINGLE API HELPER — all calls are GET to avoid CORS/redirect issues ──
+// ── SINGLE API HELPER — all GET to avoid GAS CORS/redirect issues ──
 async function gasGet(action, params = {}) {
   const url  = `${API_URL}?${new URLSearchParams({ action, token: ADMIN_TOKEN, ...params })}`;
   const res  = await fetch(url);
+  if (!res.ok) throw new Error("HTTP " + res.status);
   const data = await res.json();
-  if (data?.error === "Unauthorized") throw new Error("Unauthorized");
+  // Surface GAS-level errors so callers can catch them
+  if (data?.error) throw new Error(data.error);
   return data;
 }
 
@@ -506,7 +484,7 @@ async function gasGet(action, params = {}) {
 async function loadExpenses() {
   try {
     const data = await gasGet("getExpenses");
-    expenses = Array.isArray(data) ? data : (data.expenses || []);
+    expenses = Array.isArray(data) ? data : [];
   } catch (e) {
     showToast("Failed to load expenses: " + e.message, "error");
     expenses = [];
@@ -516,7 +494,7 @@ async function loadExpenses() {
 async function loadIncomes() {
   try {
     const data = await gasGet("getIncomes");
-    incomes = Array.isArray(data) ? data : (data.incomes || []);
+    incomes = Array.isArray(data) ? data : [];
   } catch (e) {
     showToast("Failed to load incomes: " + e.message, "error");
     incomes = [];
@@ -574,12 +552,6 @@ function handleIncBankChange() {
   if (v !== "Other") document.getElementById("incBankOther").value = "";
 }
 
-function handleIncPersonChange() {
-  const v = document.getElementById("incPerson").value;
-  document.getElementById("incPersonOtherRow").style.display = v === "Other" ? "" : "none";
-  if (v !== "Other") document.getElementById("incPersonOther").value = "";
-}
-
 // ── ADD EXPENSE ───────────────────────────────────────────────
 async function addExpense() {
   const date      = document.getElementById("expDate").value;
@@ -587,28 +559,29 @@ async function addExpense() {
   const person    = rawPerson === "Other"
     ? document.getElementById("expPersonOther").value.trim()
     : rawPerson;
-  const amount    = parseFloat(document.getElementById("expAmount").value);
-  const reason    = document.getElementById("expReason").value.trim();
-  const mode      = document.getElementById("expMode").value;
-  const card      = document.getElementById("expCard").value;
+  const amount = parseFloat(document.getElementById("expAmount").value);
+  const reason = document.getElementById("expReason").value.trim();
+  const mode   = document.getElementById("expMode").value;
+  const card   = document.getElementById("expCard").value;
 
-  if (!date)             return showToast("Select a date", "error");
-  if (!person)           return showToast("Enter who spent", "error");
+  if (!date)                  return showToast("Select a date", "error");
+  if (!person)                return showToast("Enter who spent", "error");
   if (!amount || amount <= 0) return showToast("Enter a valid amount", "error");
-  if (!reason)           return showToast("Enter a reason", "error");
-  if (!mode)             return showToast("Select payment mode", "error");
+  if (!reason)                return showToast("Enter a reason", "error");
+  if (!mode)                  return showToast("Select payment mode", "error");
 
   const record = { id: "EX" + Date.now(), date, person, amount, reason, mode, card };
 
   showLoading(true);
   try {
-    await gasGet("saveExpense", { record: JSON.stringify(record) });
+    const result = await gasGet("saveExpense", { record: JSON.stringify(record) });
+    // gasGet now throws on error, so if we reach here it succeeded
     expenses.push(record);
     resetExpForm();
     toggleForm("expForm");
     renderExpTable();
     updateSummary();
-    showToast("✅ Expense saved", "success");
+    showToast("✅ Expense saved to sheet", "success");
   } catch (e) {
     showToast("Save failed: " + e.message, "error");
   } finally {
@@ -617,37 +590,34 @@ async function addExpense() {
 }
 
 function resetExpForm() {
-  document.getElementById("expDate").valueAsDate = new Date();
-  document.getElementById("expPerson").value      = "";
-  document.getElementById("expPersonOther").value = "";
-  document.getElementById("expAmount").value      = "";
-  document.getElementById("expReason").value      = "";
-  document.getElementById("expMode").value        = "";
-  document.getElementById("expCard").value        = "";
+  document.getElementById("expDate").valueAsDate    = new Date();
+  document.getElementById("expPerson").value        = "";
+  document.getElementById("expPersonOther").value   = "";
+  document.getElementById("expAmount").value        = "";
+  document.getElementById("expReason").value        = "";
+  document.getElementById("expMode").value          = "";
+  document.getElementById("expCard").value          = "";
   document.getElementById("expOtherRow").style.display = "none";
 }
 
 // ── ADD INCOME ────────────────────────────────────────────────
 async function addIncome() {
-  const date      = document.getElementById("incDate").value;
-  const rawBank   = document.getElementById("incBank").value;
-  const bank      = rawBank === "Other"
+  const date   = document.getElementById("incDate").value;
+  const rawBank = document.getElementById("incBank").value;
+  const bank   = rawBank === "Other"
     ? document.getElementById("incBankOther").value.trim()
     : rawBank;
-  const amount    = parseFloat(document.getElementById("incAmount").value);
-  const rawPerson = document.getElementById("incPerson").value;
-  const person    = rawPerson === "Other"
-    ? document.getElementById("incPersonOther").value.trim()
-    : rawPerson;
-  const mode      = document.getElementById("incMode").value;
-  const card      = document.getElementById("incCard").value;
-  const notes     = document.getElementById("incNotes").value.trim();
+  const amount = parseFloat(document.getElementById("incAmount").value);
+  const person = document.getElementById("incPerson").value.trim();   // free text
+  const mode   = document.getElementById("incMode").value;
+  const card   = document.getElementById("incCard").value;
+  const notes  = document.getElementById("incNotes").value.trim();
 
-  if (!date)             return showToast("Select a date", "error");
-  if (!bank)             return showToast("Select / enter bank", "error");
+  if (!date)                  return showToast("Select a date", "error");
+  if (!bank)                  return showToast("Select / enter bank", "error");
   if (!amount || amount <= 0) return showToast("Enter a valid amount", "error");
-  if (!person)           return showToast("Enter by person", "error");
-  if (!mode)             return showToast("Select payment mode", "error");
+  if (!person)                return showToast("Enter by person", "error");
+  if (!mode)                  return showToast("Select payment mode", "error");
 
   const record = { id: "IN" + Date.now(), date, bank, amount, person, mode, card, notes };
 
@@ -659,7 +629,7 @@ async function addIncome() {
     toggleForm("incForm");
     renderIncTable();
     updateSummary();
-    showToast("✅ Income saved", "success");
+    showToast("✅ Income saved to sheet", "success");
   } catch (e) {
     showToast("Save failed: " + e.message, "error");
   } finally {
@@ -668,17 +638,15 @@ async function addIncome() {
 }
 
 function resetIncForm() {
-  document.getElementById("incDate").valueAsDate    = new Date();
-  document.getElementById("incBank").value          = "";
-  document.getElementById("incBankOther").value     = "";
-  document.getElementById("incAmount").value        = "";
-  document.getElementById("incPerson").value        = "";
-  document.getElementById("incPersonOther").value   = "";
-  document.getElementById("incMode").value          = "";
-  document.getElementById("incCard").value          = "";
-  document.getElementById("incNotes").value         = "";
-  document.getElementById("incBankOtherRow").style.display   = "none";
-  document.getElementById("incPersonOtherRow").style.display = "none";
+  document.getElementById("incDate").valueAsDate  = new Date();
+  document.getElementById("incBank").value        = "";
+  document.getElementById("incBankOther").value   = "";
+  document.getElementById("incAmount").value      = "";
+  document.getElementById("incPerson").value      = "";
+  document.getElementById("incMode").value        = "";
+  document.getElementById("incCard").value        = "";
+  document.getElementById("incNotes").value       = "";
+  document.getElementById("incBankOtherRow").style.display = "none";
 }
 
 // ── DELETE ────────────────────────────────────────────────────
@@ -722,10 +690,10 @@ function renderExpTable() {
   const search       = document.getElementById("expSearch").value.toLowerCase();
 
   const rows = expenses.filter(e => {
-    if (filterMonth  && !e.date.startsWith(filterMonth))                  return false;
-    if (filterPerson && e.person !== filterPerson)                        return false;
-    if (filterMode   && e.mode   !== filterMode)                          return false;
-    if (search       && !(e.reason || "").toLowerCase().includes(search)) return false;
+    if (filterMonth  && !e.date.startsWith(filterMonth))                   return false;
+    if (filterPerson && e.person !== filterPerson)                         return false;
+    if (filterMode   && e.mode   !== filterMode)                           return false;
+    if (search       && !(e.reason||"").toLowerCase().includes(search))    return false;
     return true;
   }).sort((a, b) => b.date.localeCompare(a.date));
 
@@ -741,23 +709,23 @@ function renderExpTable() {
       <td style="font-weight:600">${e.person}</td>
       <td class="amount-exp">₹${fmt(e.amount)}</td>
       <td style="color:var(--text2)">${e.reason || "—"}</td>
-      <td><span class="mode-badge mode-${(e.mode || "").toLowerCase()}">${e.mode || "—"}</span></td>
-      <td style="color:var(--muted);font-size:11px">${e.card || "—"}</td>
+      <td><span class="mode-badge mode-${(e.mode||"").toLowerCase()}">${e.mode||"—"}</span></td>
+      <td style="color:var(--muted);font-size:11px">${e.card||"—"}</td>
       <td><button class="del-btn" onclick="deleteExpense('${e.id}')">🗑</button></td>
     </tr>`).join("");
 }
 
 function renderIncTable() {
   const filterMonth  = document.getElementById("incFilterMonth").value;
-  const filterPerson = document.getElementById("incFilterPerson").value;
+  const filterPerson = document.getElementById("incFilterPerson").value.toLowerCase();
   const search       = document.getElementById("incSearch").value.toLowerCase();
 
   const rows = incomes.filter(e => {
-    if (filterMonth  && !e.date.startsWith(filterMonth))    return false;
-    if (filterPerson && e.person !== filterPerson)           return false;
+    if (filterMonth  && !e.date.startsWith(filterMonth))                              return false;
+    if (filterPerson && !(e.person||"").toLowerCase().includes(filterPerson))         return false;
     if (search &&
-        !(e.notes || "").toLowerCase().includes(search) &&
-        !(e.bank  || "").toLowerCase().includes(search))    return false;
+        !(e.notes||"").toLowerCase().includes(search) &&
+        !(e.bank ||"").toLowerCase().includes(search))                                return false;
     return true;
   }).sort((a, b) => b.date.localeCompare(a.date));
 
@@ -773,9 +741,9 @@ function renderIncTable() {
       <td style="font-weight:600">${e.bank}</td>
       <td class="amount-inc">₹${fmt(e.amount)}</td>
       <td>${e.person}</td>
-      <td><span class="mode-badge mode-${(e.mode || "").toLowerCase().replace(/ /g, "-")}">${e.mode || "—"}</span></td>
-      <td style="color:var(--muted);font-size:11px">${e.card  || "—"}</td>
-      <td style="color:var(--muted);font-size:12px">${e.notes || "—"}</td>
+      <td><span class="mode-badge mode-${(e.mode||"").toLowerCase().replace(/ /g,"-")}">${e.mode||"—"}</span></td>
+      <td style="color:var(--muted);font-size:11px">${e.card ||"—"}</td>
+      <td style="color:var(--muted);font-size:12px">${e.notes||"—"}</td>
       <td><button class="del-btn" onclick="deleteIncome('${e.id}')">🗑</button></td>
     </tr>`).join("");
 }
